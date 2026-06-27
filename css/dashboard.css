@@ -1,0 +1,521 @@
+/* ==========================================================
+   RewardHub - Dashboard.css
+   ========================================================== */
+
+/* ===== شاشة المصادقة ===== */
+.auth-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.auth-container {
+    width: 100%;
+    max-width: 420px;
+    padding: 20px;
+}
+
+.auth-box {
+    background: var(--dark-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    padding: 40px 32px;
+    box-shadow: var(--shadow);
+}
+
+.auth-logo {
+    text-align: center;
+    margin-bottom: 28px;
+}
+
+.auth-logo span {
+    font-size: 40px;
+    display: block;
+}
+
+.auth-logo h2 {
+    font-size: 24px;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-top: 4px;
+}
+
+.auth-logo p {
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin-top: 2px;
+}
+
+/* ===== تبويبات المصادقة ===== */
+.auth-tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 24px;
+    background: var(--dark-input);
+    border-radius: 12px;
+    padding: 4px;
+}
+
+.auth-tab {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: var(--transition);
+    font-size: 14px;
+}
+
+.auth-tab.active {
+    background: var(--primary);
+    color: white;
+}
+
+.auth-tab:hover:not(.active) {
+    color: var(--text-primary);
+}
+
+.auth-form {
+    display: none;
+}
+
+.auth-form.active {
+    display: block;
+}
+
+.auth-form .form-group {
+    margin-bottom: 16px;
+}
+
+.auth-error {
+    background: rgba(255, 23, 68, 0.1);
+    border: 1px solid rgba(255, 23, 68, 0.2);
+    color: var(--danger);
+    padding: 12px;
+    border-radius: 8px;
+    margin-top: 12px;
+    text-align: center;
+    font-size: 14px;
+}
+
+/* ===== لوحة المستخدم ===== */
+.user-dashboard {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* ===== شريط التنقل العلوي ===== */
+.dashboard-navbar {
+    background: rgba(13, 11, 26, 0.95);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border-color);
+    padding: 12px 24px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+}
+
+.dashboard-nav-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 100%;
+}
+
+.dashboard-nav-brand .logo {
+    font-size: 22px;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-decoration: none;
+}
+
+.dashboard-nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.user-balance {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--secondary);
+    background: rgba(0, 212, 255, 0.1);
+    padding: 6px 16px;
+    border-radius: 50px;
+    border: 1px solid rgba(0, 212, 255, 0.2);
+}
+
+/* ===== جسم لوحة المستخدم ===== */
+.dashboard-body {
+    display: flex;
+    margin-top: 64px;
+    min-height: calc(100vh - 64px);
+}
+
+/* ===== الشريط الجانبي ===== */
+.dashboard-sidebar {
+    width: 240px;
+    background: var(--dark-card);
+    border-right: 1px solid var(--border-color);
+    padding: 16px 0;
+    position: fixed;
+    top: 64px;
+    bottom: 0;
+    overflow-y: auto;
+    scrollbar-width: thin;
+}
+
+.dashboard-sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 20px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: var(--transition);
+    border-right: 3px solid transparent;
+    font-size: 14px;
+    position: relative;
+}
+
+.sidebar-item:hover {
+    background: rgba(108, 60, 225, 0.08);
+    color: var(--text-primary);
+}
+
+.sidebar-item.active {
+    background: rgba(108, 60, 225, 0.12);
+    color: var(--primary-light);
+    border-right-color: var(--primary);
+}
+
+.sidebar-item i {
+    width: 20px;
+    text-align: center;
+    font-size: 16px;
+}
+
+.sidebar-item .badge {
+    margin-right: auto;
+    font-size: 10px;
+    padding: 2px 8px;
+}
+
+/* ===== المحتوى الرئيسي ===== */
+.dashboard-content {
+    margin-left: 240px;
+    padding: 24px 32px;
+    flex: 1;
+    width: 100%;
+}
+
+.dashboard-section {
+    animation: fadeInUp 0.3s ease forwards;
+}
+
+/* ===== بطاقات الإحصائيات ===== */
+.dashboard-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.stat-card {
+    background: var(--dark-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    padding: 20px;
+    transition: var(--transition);
+}
+
+.stat-card:hover {
+    border-color: var(--primary);
+    transform: translateY(-2px);
+}
+
+.stat-card .stat-icon {
+    font-size: 24px;
+    margin-bottom: 4px;
+}
+
+.stat-card .stat-number {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.stat-card .stat-label {
+    color: var(--text-secondary);
+    font-size: 13px;
+    margin-top: 2px;
+}
+
+/* ===== بطاقات المهام ===== */
+.task-card {
+    background: var(--dark-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    padding: 20px;
+    transition: var(--transition);
+}
+
+.task-card:hover {
+    border-color: var(--primary);
+    transform: translateY(-2px);
+}
+
+.task-card .task-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.task-card .task-title {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.task-card .task-reward {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--secondary);
+}
+
+.task-card .task-description {
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin-bottom: 12px;
+}
+
+.task-card .task-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* ===== بطاقات الجوائز ===== */
+.prize-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+}
+
+.prize-card {
+    background: var(--dark-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    padding: 20px;
+    text-align: center;
+    transition: var(--transition);
+}
+
+.prize-card:hover {
+    border-color: var(--primary);
+    transform: translateY(-4px);
+}
+
+.prize-card .prize-icon {
+    font-size: 40px;
+    margin-bottom: 8px;
+}
+
+.prize-card .prize-name {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.prize-card .prize-price {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--secondary);
+    margin: 8px 0;
+}
+
+.prize-card .prize-stock {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+/* ===== نموذج السحب ===== */
+.withdraw-form {
+    background: var(--dark-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    padding: 24px;
+    max-width: 500px;
+}
+
+.withdraw-form .form-group {
+    margin-bottom: 16px;
+}
+
+.withdraw-form .form-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+/* ===== قائمة الإحالات ===== */
+.referral-link-box {
+    background: var(--dark-input);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 16px 0;
+}
+
+.referral-link-box input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-size: 14px;
+    outline: none;
+}
+
+/* ===== قائمة الإشعارات ===== */
+.notification-item {
+    background: var(--dark-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+    transition: var(--transition);
+    cursor: pointer;
+}
+
+.notification-item:hover {
+    border-color: var(--primary);
+}
+
+.notification-item.unread {
+    border-right: 4px solid var(--primary);
+    background: rgba(108, 60, 225, 0.05);
+}
+
+.notification-item .notif-title {
+    font-weight: 600;
+}
+
+.notification-item .notif-time {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+/* ===== ملف المستخدم ===== */
+.profile-card {
+    background: var(--dark-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    padding: 32px;
+    max-width: 600px;
+}
+
+.profile-card .profile-avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+    color: white;
+    margin: 0 auto 16px;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+    .dashboard-sidebar {
+        width: 100%;
+        position: relative;
+        top: 0;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+        padding: 8px;
+    }
+
+    .dashboard-content {
+        margin-left: 0;
+        padding: 16px;
+    }
+
+    .dashboard-nav-actions .user-balance {
+        font-size: 14px;
+        padding: 4px 12px;
+    }
+
+    .dashboard-stats {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .prize-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .sidebar-item span {
+        display: none;
+    }
+
+    .sidebar-item i {
+        font-size: 20px;
+        width: auto;
+    }
+
+    .sidebar-item {
+        justify-content: center;
+        padding: 12px;
+    }
+
+    .withdraw-form {
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .dashboard-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .prize-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .dashboard-nav-actions {
+        gap: 8px;
+    }
+
+    .dashboard-nav-actions .btn {
+        font-size: 12px;
+        padding: 6px 12px;
+    }
+}
