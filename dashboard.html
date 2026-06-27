@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RewardHub - لوحة المستخدم</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/dashboard.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+    <!-- ========================================================== -->
+    <!--  شاشة تسجيل الدخول / التسجيل (إذا لم يكن مسجلاً)  -->
+    <!-- ========================================================== -->
+    <div id="authScreen" class="auth-screen">
+        <div class="auth-container">
+            <div class="auth-box">
+                <!-- الشعار -->
+                <div class="auth-logo">
+                    <span>🏆</span>
+                    <h2>RewardHub</h2>
+                    <p>سجل الدخول للبدء في الربح</p>
+                </div>
+
+                <!-- تبويب تسجيل الدخول / التسجيل -->
+                <div class="auth-tabs">
+                    <button class="auth-tab active" data-tab="login">تسجيل الدخول</button>
+                    <button class="auth-tab" data-tab="register">إنشاء حساب</button>
+                </div>
+
+                <!-- ===== نموذج تسجيل الدخول ===== -->
+                <form id="loginForm" class="auth-form active">
+                    <div class="form-group">
+                        <label>📧 البريد الإلكتروني</label>
+                        <input type="email" id="loginEmail" class="form-control" placeholder="example@email.com" required />
+                    </div>
+                    <div class="form-group">
+                        <label>🔑 كلمة المرور</label>
+                        <input type="password" id="loginPassword" class="form-control" placeholder="********" required />
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-lg" style="width:100%;">
+                        <i class="fas fa-sign-in-alt"></i> تسجيل الدخول
+                    </button>
+                    <div id="loginError" class="auth-error" style="display:none;"></div>
+                </form>
+
+                <!-- ===== نموذج التسجيل ===== -->
+                <form id="registerForm" class="auth-form">
+                    <div class="form-group">
+                        <label>👤 اسم المستخدم</label>
+                        <input type="text" id="registerUsername" class="form-control" placeholder="Ahmed_Gamer" required />
+                    </div>
+                    <div class="form-group">
+                        <label>📧 البريد الإلكتروني</label>
+                        <input type="email" id="registerEmail" class="form-control" placeholder="example@email.com" required />
+                    </div>
+                    <div class="form-group">
+                        <label>🔑 كلمة المرور</label>
+                        <input type="password" id="registerPassword" class="form-control" placeholder="******** (6 أحرف على الأقل)" required minlength="6" />
+                    </div>
+                    <div class="form-group">
+                        <label>🔑 تأكيد كلمة المرور</label>
+                        <input type="password" id="registerConfirmPassword" class="form-control" placeholder="********" required />
+                    </div>
+                    <button type="submit" class="btn btn-success btn-lg" style="width:100%;">
+                        <i class="fas fa-user-plus"></i> إنشاء حساب
+                    </button>
+                    <div id="registerError" class="auth-error" style="display:none;"></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================== -->
+    <!--  لوحة المستخدم  (تظهر بعد تسجيل الدخول)  -->
+    <!-- ========================================================== -->
+    <div id="userDashboard" class="user-dashboard" style="display:none;">
+
+        <!-- ===== الشريط العلوي ===== -->
+        <nav class="dashboard-navbar">
+            <div class="dashboard-nav-container">
+                <div class="dashboard-nav-brand">
+                    <a href="#" class="logo">🏆 RewardHub</a>
+                </div>
+                <div class="dashboard-nav-actions">
+                    <span class="user-balance" id="userBalanceDisplay">$0.00</span>
+                    <button class="btn btn-danger btn-sm" id="logoutBtn">
+                        <i class="fas fa-sign-out-alt"></i> خروج
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- ===== المحتوى الرئيسي ===== -->
+        <div class="dashboard-body">
+
+            <!-- ===== الشريط الجانبي ===== -->
+            <aside class="dashboard-sidebar" id="dashboardSidebar">
+                <nav class="dashboard-sidebar-nav">
+                    <a href="#" class="sidebar-item active" data-section="dashboard">
+                        <i class="fas fa-chart-pie"></i> <span>لوحة التحكم</span>
+                    </a>
+                    <a href="#" class="sidebar-item" data-section="tasks">
+                        <i class="fas fa-tasks"></i> <span>المهام</span>
+                    </a>
+                    <a href="#" class="sidebar-item" data-section="offers">
+                        <i class="fas fa-ad"></i> <span>Offerwalls</span>
+                    </a>
+                    <a href="#" class="sidebar-item" data-section="surveys">
+                        <i class="fas fa-poll"></i> <span>الاستبيانات</span>
+                    </a>
+                    <a href="#" class="sidebar-item" data-section="faucets">
+                        <i class="fas fa-bolt"></i> <span>الصنابير</span>
+                    </a>
+                    <a href="#" class="sidebar-item" data-section="smartlinks">
+                        <i class="fas fa-link"></i> <span>Smart Links</span>
+                    </a>
+                    <a href="#" class="sidebar-item" data-section="prizes">
+                        <i class="fas fa-gift"></i> <span>الجوائز</span>
+                    </a>
+                    <a href="#" class="sidebar-item" data-section="wallet">
+                        <i class="fas fa-wallet"></i> <span>المحفظة</span>
+                    </a>
+                    <a href="#" class="sidebar-item" data-section="withdraw">
+                        <i class="fas fa-money-bill-wave"></i> <span>السحب</span>
+                    </a>
+                    <a href="#" class="sidebar-item" data-section="referrals">
+                        <i class="fas fa-users"></i> <span>الإحالات</span>
+                    </a>
+                    <a href="#" class="sidebar-item" data-section="notifications">
+                        <i class="fas fa-bell"></i> <span>الإشعارات</span>
+                        <span class="badge badge-danger" id="notifBadge">0</span>
+                    </a>
+                    <a href="#" class="sidebar-item" data-section="settings">
+                        <i class="fas fa-cog"></i> <span>الإعدادات</span>
+                    </a>
+                    <a href="#" class="sidebar-item" data-section="profile">
+                        <i class="fas fa-user"></i> <span>الملف الشخصي</span>
+                    </a>
+                </nav>
+            </aside>
+
+            <!-- ===== المحتوى الرئيسي ===== -->
+            <main class="dashboard-content" id="dashboardContent">
+                <!-- سيتم تعبئتها بواسطة JavaScript -->
+                <div id="sectionDashboard" class="dashboard-section active">
+                    <div id="dashboardMainContent"></div>
+                </div>
+                <div id="sectionTasks" class="dashboard-section" style="display:none;"></div>
+                <div id="sectionOffers" class="dashboard-section" style="display:none;"></div>
+                <div id="sectionSurveys" class="dashboard-section" style="display:none;"></div>
+                <div id="sectionFaucets" class="dashboard-section" style="display:none;"></div>
+                <div id="sectionSmartlinks" class="dashboard-section" style="display:none;"></div>
+                <div id="sectionPrizes" class="dashboard-section" style="display:none;"></div>
+                <div id="sectionWallet" class="dashboard-section" style="display:none;"></div>
+                <div id="sectionWithdraw" class="dashboard-section" style="display:none;"></div>
+                <div id="sectionReferrals" class="dashboard-section" style="display:none;"></div>
+                <div id="sectionNotifications" class="dashboard-section" style="display:none;"></div>
+                <div id="sectionSettings" class="dashboard-section" style="display:none;"></div>
+                <div id="sectionProfile" class="dashboard-section" style="display:none;"></div>
+            </main>
+        </div>
+    </div>
+
+    <!-- ========================================================== -->
+    <!--  JavaScript  -->
+    <!-- ========================================================== -->
+    <script src="js/supabase-client.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/database.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+</html>
