@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RewardHub - لوحة المعلن</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/advertiser.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+    <!-- ========================================================== -->
+    <!--  شاشة تسجيل الدخول / التحقق من المعلن  -->
+    <!-- ========================================================== -->
+    <div id="advertiserAuthScreen" class="advertiser-auth-screen">
+        <div class="advertiser-auth-container">
+            <div class="advertiser-auth-box">
+                <div class="advertiser-auth-logo">
+                    <span>📢</span>
+                    <h2>RewardHub</h2>
+                    <p>لوحة المعلن</p>
+                </div>
+
+                <form id="advertiserLoginForm">
+                    <div class="form-group">
+                        <label>📧 البريد الإلكتروني</label>
+                        <input type="email" id="advLoginEmail" class="form-control" placeholder="example@email.com" required />
+                    </div>
+                    <div class="form-group">
+                        <label>🔑 كلمة المرور</label>
+                        <input type="password" id="advLoginPassword" class="form-control" placeholder="********" required />
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-lg" style="width:100%;">
+                        <i class="fas fa-sign-in-alt"></i> دخول كمعلن
+                    </button>
+                    <div id="advLoginError" class="auth-error" style="display:none;"></div>
+                </form>
+
+                <div class="advertiser-auth-footer">
+                    <small>🚀 RewardHub v1.0 - نظام إدارة الحملات الإعلانية</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================== -->
+    <!--  لوحة المعلن الرئيسية  -->
+    <!-- ========================================================== -->
+    <div id="advertiserDashboard" class="advertiser-dashboard" style="display:none;">
+
+        <!-- ===== الشريط العلوي ===== -->
+        <nav class="advertiser-navbar">
+            <div class="advertiser-nav-container">
+                <div class="advertiser-nav-brand">
+                    <a href="#" class="logo">📢 RewardHub</a>
+                    <span class="advertiser-badge">معلن</span>
+                </div>
+                <div class="advertiser-nav-actions">
+                    <span class="advertiser-balance" id="advBalanceDisplay">$0.00</span>
+                    <button class="btn btn-danger btn-sm" id="advLogoutBtn">
+                        <i class="fas fa-sign-out-alt"></i> خروج
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- ===== المحتوى الرئيسي ===== -->
+        <div class="advertiser-body">
+
+            <!-- ===== الشريط الجانبي ===== -->
+            <aside class="advertiser-sidebar" id="advertiserSidebar">
+                <nav class="advertiser-sidebar-nav">
+                    <a href="#" class="sidebar-item active" data-section="dashboard">
+                        <i class="fas fa-chart-pie"></i> <span>لوحة التحكم</span>
+                    </a>
+                    <a href="#" class="sidebar-item" data-section="campaigns">
+                        <i class="fas fa-rocket"></i> <span>الحملات</span>
+                    </a>
+                    <a href="#" class="sidebar-item" data-section="create">
+                        <i class="fas fa-plus-circle"></i> <span>إنشاء حملة</span>
+                    </a>
+                    <a href="#" class="sidebar-item" data-section="stats">
+                        <i class="fas fa-chart-line"></i> <span>الإحصائيات</span>
+                    </a>
+                    <a href="#" class="sidebar-item" data-section="wallet">
+                        <i class="fas fa-wallet"></i> <span>المحفظة</span>
+                    </a>
+                    <a href="#" class="sidebar-item" data-section="settings">
+                        <i class="fas fa-cog"></i> <span>الإعدادات</span>
+                    </a>
+                </nav>
+            </aside>
+
+            <!-- ===== المحتوى الرئيسي ===== -->
+            <main class="advertiser-content" id="advertiserContent">
+                <div id="sectionDashboard" class="advertiser-section active"></div>
+                <div id="sectionCampaigns" class="advertiser-section" style="display:none;"></div>
+                <div id="sectionCreate" class="advertiser-section" style="display:none;"></div>
+                <div id="sectionStats" class="advertiser-section" style="display:none;"></div>
+                <div id="sectionWallet" class="advertiser-section" style="display:none;"></div>
+                <div id="sectionSettings" class="advertiser-section" style="display:none;"></div>
+            </main>
+        </div>
+    </div>
+
+    <!-- ========================================================== -->
+    <!--  JavaScript  -->
+    <!-- ========================================================== -->
+    <script src="js/supabase-client.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/database.js"></script>
+    <script src="js/advertiser.js"></script>
+</body>
+</html>
