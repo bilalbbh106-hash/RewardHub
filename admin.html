@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RewardHub - لوحة الإدارة</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/admin.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+</head>
+<body>
+
+    <!-- ========================================================== -->
+    <!--  شاشة تسجيل الدخول إلى لوحة الإدارة  -->
+    <!-- ========================================================== -->
+    <div id="adminLoginScreen" class="admin-login-screen">
+        <div class="admin-login-container">
+            <div class="admin-login-box">
+                <!-- الشعار -->
+                <div class="admin-login-logo">
+                    <span>🏆</span>
+                    <h2>RewardHub</h2>
+                    <p>لوحة الإدارة</p>
+                </div>
+
+                <!-- نموذج تسجيل الدخول -->
+                <form id="adminLoginForm" class="admin-login-form">
+                    <div class="form-group">
+                        <label for="adminPassword">🔑 كلمة المرور</label>
+                        <input type="password" id="adminPassword" class="form-control" placeholder="أدخل كلمة المرور" required />
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;">
+                        <i class="fas fa-lock"></i> دخول
+                    </button>
+                    <div id="loginError" class="login-error" style="display: none; color: var(--danger); margin-top: 12px; text-align: center;">
+                        <i class="fas fa-exclamation-circle"></i> كلمة المرور غير صحيحة!
+                    </div>
+                </form>
+
+                <div class="admin-login-footer">
+                    <small>🚀 RewardHub v1.0</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================== -->
+    <!--  لوحة الإدارة الرئيسية  (مخفية حتى تسجيل الدخول)  -->
+    <!-- ========================================================== -->
+    <div id="adminDashboard" class="admin-dashboard" style="display: none;">
+
+        <!-- ===== الشريط العلوي ===== -->
+        <nav class="admin-navbar">
+            <div class="admin-nav-container">
+                <div class="admin-nav-brand">
+                    <span>🏆</span>
+                    <h3>RewardHub</h3>
+                    <span class="admin-badge">مدير</span>
+                </div>
+                <div class="admin-nav-actions">
+                    <span class="admin-date" id="currentDate"></span>
+                    <button id="adminLogoutBtn" class="btn btn-danger btn-sm">
+                        <i class="fas fa-sign-out-alt"></i> خروج
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <div class="admin-body">
+            <!-- ===== الشريط الجانبي ===== -->
+            <aside class="admin-sidebar" id="adminSidebar">
+                <nav class="admin-sidebar-nav">
+                    <a href="#" class="admin-nav-item active" data-section="dashboard">
+                        <i class="fas fa-chart-pie"></i> <span>لوحة التحكم</span>
+                    </a>
+                    <a href="#" class="admin-nav-item" data-section="users">
+                        <i class="fas fa-users"></i> <span>المستخدمين</span>
+                        <span class="badge badge-info" id="usersCount">0</span>
+                    </a>
+                    <a href="#" class="admin-nav-item" data-section="withdrawals">
+                        <i class="fas fa-money-bill-wave"></i> <span>السحوبات</span>
+                        <span class="badge badge-warning" id="pendingWithdrawals">0</span>
+                    </a>
+                    <a href="#" class="admin-nav-item" data-section="prizes">
+                        <i class="fas fa-gift"></i> <span>الجوائز</span>
+                    </a>
+                    <a href="#" class="admin-nav-item" data-section="games">
+                        <i class="fas fa-gamepad"></i> <span>الألعاب</span>
+                    </a>
+                    <a href="#" class="admin-nav-item" data-section="vouchers">
+                        <i class="fas fa-ticket-alt"></i> <span>القسائم</span>
+                    </a>
+                    <a href="#" class="admin-nav-item" data-section="tasks">
+                        <i class="fas fa-tasks"></i> <span>المهام</span>
+                    </a>
+                    <a href="#" class="admin-nav-item" data-section="offers">
+                        <i class="fas fa-ad"></i> <span>Offerwalls</span>
+                    </a>
+                    <a href="#" class="admin-nav-item" data-section="surveys">
+                        <i class="fas fa-poll"></i> <span>الاستبيانات</span>
+                    </a>
+                    <a href="#" class="admin-nav-item" data-section="faucets">
+                        <i class="fas fa-bolt"></i> <span>الصنابير</span>
+                    </a>
+                    <a href="#" class="admin-nav-item" data-section="smartlinks">
+                        <i class="fas fa-link"></i> <span>Smart Links</span>
+                    </a>
+                    <a href="#" class="admin-nav-item" data-section="advertisers">
+                        <i class="fas fa-bullhorn"></i> <span>المعلنون</span>
+                    </a>
+                    <a href="#" class="admin-nav-item" data-section="campaigns">
+                        <i class="fas fa-rocket"></i> <span>الحملات</span>
+                    </a>
+                    <a href="#" class="admin-nav-item" data-section="prices">
+                        <i class="fas fa-dollar-sign"></i> <span>الأسعار</span>
+                    </a>
+                    <a href="#" class="admin-nav-item" data-section="languages">
+                        <i class="fas fa-language"></i> <span>اللغات</span>
+                    </a>
+                    <a href="#" class="admin-nav-item" data-section="notifications">
+                        <i class="fas fa-bell"></i> <span>الإشعارات</span>
+                    </a>
+                    <a href="#" class="admin-nav-item" data-section="ai">
+                        <i class="fas fa-robot"></i> <span>الذكاء الاصطناعي</span>
+                    </a>
+                    <a href="#" class="admin-nav-item" data-section="antifraud">
+                        <i class="fas fa-shield-alt"></i> <span>مكافحة الغش</span>
+                    </a>
+                    <a href="#" class="admin-nav-item" data-section="apis">
+                        <i class="fas fa-plug"></i> <span>APIs</span>
+                    </a>
+                    <a href="#" class="admin-nav-item" data-section="backup">
+                        <i class="fas fa-database"></i> <span>النسخ الاحتياطي</span>
+                    </a>
+                    <a href="#" class="admin-nav-item" data-section="logs">
+                        <i class="fas fa-history"></i> <span>سجل العمليات</span>
+                    </a>
+                    <a href="#" class="admin-nav-item" data-section="wallet">
+                        <i class="fas fa-wallet"></i> <span>محفظة الأدمن</span>
+                    </a>
+                </nav>
+            </aside>
+
+            <!-- ===== المحتوى الرئيسي ===== -->
+            <main class="admin-content" id="adminContent">
+                <!-- المحتوى يتغير حسب القسم المختار -->
+                <div id="sectionDashboard" class="admin-section active">
+                    <!-- سيتم تعبئتها بواسطة JavaScript -->
+                </div>
+                <div id="sectionUsers" class="admin-section" style="display: none;"></div>
+                <div id="sectionWithdrawals" class="admin-section" style="display: none;"></div>
+                <div id="sectionPrizes" class="admin-section" style="display: none;"></div>
+                <div id="sectionGames" class="admin-section" style="display: none;"></div>
+                <div id="sectionVouchers" class="admin-section" style="display: none;"></div>
+                <div id="sectionTasks" class="admin-section" style="display: none;"></div>
+                <div id="sectionOffers" class="admin-section" style="display: none;"></div>
+                <div id="sectionSurveys" class="admin-section" style="display: none;"></div>
+                <div id="sectionFaucets" class="admin-section" style="display: none;"></div>
+                <div id="sectionSmartlinks" class="admin-section" style="display: none;"></div>
+                <div id="sectionAdvertisers" class="admin-section" style="display: none;"></div>
+                <div id="sectionCampaigns" class="admin-section" style="display: none;"></div>
+                <div id="sectionPrices" class="admin-section" style="display: none;"></div>
+                <div id="sectionLanguages" class="admin-section" style="display: none;"></div>
+                <div id="sectionNotifications" class="admin-section" style="display: none;"></div>
+                <div id="sectionAi" class="admin-section" style="display: none;"></div>
+                <div id="sectionAntifraud" class="admin-section" style="display: none;"></div>
+                <div id="sectionApis" class="admin-section" style="display: none;"></div>
+                <div id="sectionBackup" class="admin-section" style="display: none;"></div>
+                <div id="sectionLogs" class="admin-section" style="display: none;"></div>
+                <div id="sectionWallet" class="admin-section" style="display: none;"></div>
+            </main>
+        </div>
+    </div>
+
+    <!-- ========================================================== -->
+    <!--  JavaScript  -->
+    <!-- ========================================================== -->
+    <script src="js/main.js"></script>
+    <script src="js/admin.js"></script>
+</body>
+</html>
