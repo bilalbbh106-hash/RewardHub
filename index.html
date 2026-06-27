@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RewardHub - أربح المال عبر الإنترنت</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+</head>
+<body>
+
+    <!-- ============================================================ -->
+    <!--  شريط التنقل  -->
+    <!-- ============================================================ -->
+    <nav class="navbar" id="navbar">
+        <div class="container">
+            <a href="/" class="logo">🏆 RewardHub</a>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="#features">طرق الربح</a></li>
+                <li><a href="#prizes">الجوائز</a></li>
+                <li><a href="#withdrawals">السحب</a></li>
+                <li><a href="#faq">الأسئلة</a></li>
+                <li><a href="dashboard.html" class="btn btn-primary btn-sm">دخول</a></li>
+                <li><a href="#" class="btn btn-secondary btn-sm">تسجيل</a></li>
+            </ul>
+            <button class="mobile-menu" id="mobileMenu">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- ============================================================ -->
+    <!--  القسم الرئيسي  Hero  -->
+    <!-- ============================================================ -->
+    <section class="hero">
+        <div class="container">
+            <h1>اربح <span>$ الدولار</span> الحقيقي<br />من منزلك</h1>
+            <p>
+                RewardHub منصة عالمية تتيح لك ربح المال من خلال تنفيذ مهام متنوعة،
+                ثم استبدال أرباحك بعملات رقمية أو قسائم ألعاب أو بطاقات هدايا
+            </p>
+            <div class="btn-group">
+                <a href="#" class="btn btn-primary btn-lg">ابدأ الآن مجاناً</a>
+                <a href="#features" class="btn btn-secondary btn-lg">اكتشف الطرق</a>
+            </div>
+
+            <!-- الإحصائيات -->
+            <div class="stats">
+                <div class="stat-item animate">
+                    <div class="stat-number" id="usersCount">12,847</div>
+                    <div class="stat-label">مستخدم نشط</div>
+                </div>
+                <div class="stat-item animate animate-delay-1">
+                    <div class="stat-number" id="earningsCount">$284,530</div>
+                    <div class="stat-label">إجمالي الأرباح</div>
+                </div>
+                <div class="stat-item animate animate-delay-2">
+                    <div class="stat-number" id="withdrawalsCount">$192,100</div>
+                    <div class="stat-label">إجمالي السحوبات</div>
+                </div>
+                <div class="stat-item animate animate-delay-3">
+                    <div class="stat-number" id="tasksCount">58,432</div>
+                    <div class="stat-label">مهمة منجزة</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!--  طرق الربح  -->
+    <!-- ============================================================ -->
+    <section id="features" class="section">
+        <div class="container">
+            <h2 class="section-title">🚀 طرق الربح المتاحة</h2>
+            <p class="section-subtitle">اختر الطريقة التي تناسبك وابدأ في الربح فوراً</p>
+
+            <div class="grid-3">
+                <div class="card gradient-card animate animate-delay-1">
+                    <i class="fas fa-tasks icon-purple"></i>
+                    <h3>Offerwalls</h3>
+                    <p>نفذ عروض الشركات العالمية واحصل على دولارات فورية</p>
+                    <span class="badge badge-success">متاح</span>
+                </div>
+                <div class="card gradient-card animate animate-delay-2">
+                    <i class="fas fa-poll icon-cyan"></i>
+                    <h3>الاستبيانات</h3>
+                    <p>شارك برأيك في استبيانات مدفوعة واحصل على المال</p>
+                    <span class="badge badge-success">متاح</span>
+                </div>
+                <div class="card gradient-card animate animate-delay-3">
+                    <i class="fas fa-play-circle icon-orange"></i>
+                    <h3>مشاهدة الفيديوهات</h3>
+                    <p>شاهد فيديوهات قصيرة واحصل على مكافآت يومية</p>
+                    <span class="badge badge-success">متاح</span>
+                </div>
+                <div class="card gradient-card animate animate-delay-1">
+                    <i class="fas fa-link icon-pink"></i>
+                    <h3>Smart Links</h3>
+                    <p>افتح روابط ذكية واربح أثناء التصفح</p>
+                    <span class="badge badge-success">متاح</span>
+                </div>
+                <div class="card gradient-card animate animate-delay-2">
+                    <i class="fas fa-bolt icon-gold"></i>
+                    <h3>Crypto Faucets</h3>
+                    <p>صنابير العملات الرقمية المجانية</p>
+                    <span class="badge badge-success">متاح</span>
+                </div>
+                <div class="card gradient-card animate animate-delay-3">
+                    <i class="fas fa-users icon-green"></i>
+                    <h3>برنامج الإحالات</h3>
+                    <p>ادعُ أصدقائك واربح $0.01 عن كل مستخدم جديد</p>
+                    <span class="badge badge-success">متاح</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!--  الجوائز  -->
+    <!-- ============================================================ -->
+    <section id="prizes" class="section" style="background: var(--dark-card);">
+        <div class="container">
+            <h2 class="section-title">🎁 متجر الجوائز</h2>
+            <p class="section-subtitle">استبدل أرباحك بجوائز حصرية</p>
+
+            <div class="grid-4">
+                <div class="card text-center">
+                    <i class="fas fa-gem icon-purple" style="font-size: 48px;"></i>
+                    <h4>Blood Strike Gold</h4>
+                    <p class="price">$5.00</p>
+                    <button class="btn btn-primary btn-sm">اشتري الآن</button>
+                </div>
+                <div class="card text-center">
+                    <i class="fas fa-fire icon-orange" style="font-size: 48px;"></i>
+                    <h4>Free Fire Diamonds</h4>
+                    <p class="price">$10.00</p>
+                    <button class="btn btn-primary btn-sm">اشتري الآن</button>
+                </div>
+                <div class="card text-center">
+                    <i class="fab fa-google-play icon-cyan" style="font-size: 48px;"></i>
+                    <h4>Google Play Card</h4>
+                    <p class="price">$25.00</p>
+                    <button class="btn btn-primary btn-sm">اشتري الآن</button>
+                </div>
+                <div class="card text-center">
+                    <i class="fab fa-steam icon-blue" style="font-size: 48px;"></i>
+                    <h4>Steam Wallet</h4>
+                    <p class="price">$50.00</p>
+                    <button class="btn btn-primary btn-sm">اشتري الآن</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!--  طرق السحب  -->
+    <!-- ============================================================ -->
+    <section id="withdrawals" class="section">
+        <div class="container">
+            <h2 class="section-title">💰 طرق السحب</h2>
+            <p class="section-subtitle">اسحب أرباحك بأكثر من طريقة تناسبك</p>
+
+            <div class="grid-3">
+                <div class="card text-center">
+                    <i class="fab fa-bitcoin icon-gold" style="font-size: 48px;"></i>
+                    <h3>USDT</h3>
+                    <p>سحب مباشر إلى محفظتك الرقمية</p>
+                    <span class="badge badge-success">الحد الأدنى $2</span>
+                </div>
+                <div class="card text-center">
+                    <i class="fas fa-wallet icon-cyan" style="font-size: 48px;"></i>
+                    <h3>FaucetPay</h3>
+                    <p>سحب إلى محفظة FaucetPay</p>
+                    <span class="badge badge-success">الحد الأدنى $2</span>
+                </div>
+                <div class="card text-center">
+                    <i class="fas fa-gift icon-pink" style="font-size: 48px;"></i>
+                    <h3>بطاقات هدايا</h3>
+                    <p>Google Play, Steam, PlayStation, Xbox</p>
+                    <span class="badge badge-success">الحد الأدنى $5</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!--  أفضل المستخدمين  -->
+    <!-- ============================================================ -->
+    <section class="section" style="background: var(--dark-card);">
+        <div class="container">
+            <h2 class="section-title">🏆 أفضل المستخدمين</h2>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>المستخدم</th>
+                            <th>إجمالي الأرباح</th>
+                            <th>السحوبات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>⭐ Ahmed_Gamer</td>
+                            <td>$1,245</td>
+                            <td>$980</td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>⭐ Crypto_Warrior</td>
+                            <td>$980</td>
+                            <td>$750</td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td>⭐ FreeFire_King</td>
+                            <td>$870</td>
+                            <td>$620</td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td>⭐ Task_Master</td>
+                            <td>$650</td>
+                            <td>$500</td>
+                        </tr>
+                        <tr>
+                            <td>5</td>
+                            <td>⭐ PUBG_Pro</td>
+                            <td>$540</td>
+                            <td>$410</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!--  الأسئلة الشائعة  FAQ  -->
+    <!-- ============================================================ -->
+    <section id="faq" class="section">
+        <div class="container">
+            <h2 class="section-title">❓ الأسئلة الشائعة</h2>
+
+            <div class="faq-grid">
+                <div class="card faq-item">
+                    <h4>كيف أربح المال من RewardHub؟</h4>
+                    <p>يمكنك الربح من خلال تنفيذ المهام، مشاهدة الإعلانات، الإجابة على الاستبيانات، استخدام صنابير العملات الرقمية، وبرنامج الإحالات.</p>
+                </div>
+                <div class="card faq-item">
+                    <h4>ما هو الحد الأدنى للسحب؟</h4>
+                    <p>الحد الأدنى للسحب هو $2 دولار أمريكي لطرق USDT و FaucetPay، و $5 لبطاقات الهدايا.</p>
+                </div>
+                <div class="card faq-item">
+                    <h4>هل المنصة آمنة؟</h4>
+                    <p>نعم، نستخدم أنظمة متقدمة لمكافحة الغش وحماية بيانات المستخدمين، وجميع المعاملات مشفرة.</p>
+                </div>
+                <div class="card faq-item">
+                    <h4>كم من الوقت يستغرق السحب؟</h4>
+                    <p>تتم معالجة السحوبات خلال 24-48 ساعة عمل.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!--  التذييل  Footer  -->
+    <!-- ============================================================ -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div>
+                    <h4>🏆 RewardHub</h4>
+                    <p style="color: var(--text-secondary);">منصة عالمية للربح الحقيقي عبر الإنترنت</p>
+                </div>
+                <div>
+                    <h4>طرق الربح</h4>
+                    <a href="#">Offerwalls</a>
+                    <a href="#">الاستبيانات</a>
+                    <a href="#">الفيديوهات</a>
+                    <a href="#">Smart Links</a>
+                </div>
+                <div>
+                    <h4>الدعم</h4>
+                    <a href="#">مركز المساعدة</a>
+                    <a href="#">سياسة الخصوصية</a>
+                    <a href="#">الشروط والأحكام</a>
+                    <a href="#">اتصل بنا</a>
+                </div>
+                <div>
+                    <h4>تابعنا</h4>
+                    <a href="#"><i class="fab fa-telegram"></i> Telegram</a>
+                    <a href="#"><i class="fab fa-discord"></i> Discord</a>
+                    <a href="#"><i class="fab fa-youtube"></i> YouTube</a>
+                    <a href="#"><i class="fab fa-twitter"></i> X</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2026 RewardHub. جميع الحقوق محفوظة</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ============================================================ -->
+    <!--  JavaScript  -->
+    <!-- ============================================================ -->
+    <script src="js/main.js"></script>
+    <script>
+        // إخفاء/إظهار القائمة في الموبايل
+        document.getElementById('mobileMenu').addEventListener('click', function() {
+            document.getElementById('navLinks').classList.toggle('show');
+        });
+    </script>
+</body>
+</html>
