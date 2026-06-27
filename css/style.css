@@ -311,7 +311,7 @@ table {
     border-collapse: collapse;
 }
 table th {
-    text-align: left;
+    text-align: right;
     padding: 16px;
     color: var(--text-secondary);
     font-weight: 600;
