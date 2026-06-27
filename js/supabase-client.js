@@ -4,8 +4,8 @@
 
 // ===== إعدادات Supabase =====
 // 🔴 هاد المفاتيح تاع Supabase ديالك - بدلهم بمفاتيحك!
-const SUPABASE_URL = 'https://xxxxxxxxxxxx.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.xxxxxxxxxxxx';
+const SUPABASE_URL = 'https://mpzupnectsanzjfqipul.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_DVd_t9iidktvf0isGGixLA_Ffv3bLrF';
 
 // ===== إنشاء عميل Supabase =====
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
