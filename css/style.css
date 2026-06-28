@@ -73,6 +73,7 @@ body {
     text-decoration: none;
     text-align: center;
 }
+
 .btn-primary {
     background: linear-gradient(135deg, var(--primary), var(--secondary));
     color: white;
@@ -81,6 +82,7 @@ body {
     transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(108, 60, 225, 0.4);
 }
+
 .btn-secondary {
     background: transparent;
     border: 2px solid var(--primary);
@@ -89,12 +91,21 @@ body {
 .btn-secondary:hover {
     background: var(--primary);
 }
+
 .btn-success {
     background: var(--success);
     color: var(--dark);
 }
 .btn-danger {
     background: var(--danger);
+    color: white;
+}
+.btn-warning {
+    background: var(--warning);
+    color: var(--dark);
+}
+.btn-accent {
+    background: var(--accent);
     color: white;
 }
 .btn-sm {
@@ -104,6 +115,28 @@ body {
 .btn-lg {
     padding: 16px 36px;
     font-size: 18px;
+}
+
+/* ===== زر دخول المشرف ===== */
+.btn-admin {
+    background: transparent !important;
+    border: 2px solid var(--accent) !important;
+    color: var(--accent) !important;
+    transition: all 0.3s ease !important;
+    padding: 8px 18px !important;
+    border-radius: 50px !important;
+    font-weight: 600 !important;
+}
+
+.btn-admin:hover {
+    background: var(--accent) !important;
+    color: white !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 20px rgba(255, 107, 53, 0.4) !important;
+}
+
+.btn-admin i {
+    margin-left: 6px;
 }
 
 /* ===== Cards ===== */
@@ -211,6 +244,12 @@ body {
     cursor: pointer;
 }
 .nav-links .btn {
+    -webkit-text-fill-color: white;
+}
+.nav-links .btn-admin {
+    -webkit-text-fill-color: var(--accent);
+}
+.nav-links .btn-admin:hover {
     -webkit-text-fill-color: white;
 }
 
@@ -459,5 +498,9 @@ table tr:hover {
     }
     .faq-grid {
         grid-template-columns: 1fr;
+    }
+    .btn-admin {
+        padding: 6px 14px !important;
+        font-size: 13px !important;
     }
 }
