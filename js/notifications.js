@@ -1,5 +1,5 @@
 // ==========================================================
-// RewardHub - نظام الإشعارات (notifications.js)
+// RewardHub - نظام الإشعارات (كامل)
 // ==========================================================
 
 // ===== عرض الإشعارات =====
@@ -28,18 +28,17 @@ async function getNotificationsHTML() {
             </div>
 
             ${notifications.length > 0 ? notifications.map(n => `
-                <div class="notification-item ${!n.is_read ? 'unread' : ''}" onclick="markNotifReadReal('${n.id}')">
+                <div class="notification-item ${!n.is_read ? 'unread' : ''}" onclick="markNotifReadReal('${n.id}')" style="background: var(--dark-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px 18px; margin-bottom: 10px; cursor: pointer; ${!n.is_read ? 'border-right: 4px solid var(--primary); background: rgba(108,60,225,0.05);' : ''}">
                     <div style="display: flex; justify-content: space-between; align-items: start;">
                         <div>
-                            <div class="notif-title" style="font-weight: ${!n.is_read ? '600' : '400'};">
+                            <div style="font-weight: ${!n.is_read ? '600' : '400'};">
                                 ${getNotificationIcon(n.type)} ${n.title}
                             </div>
                             <div style="color: var(--text-secondary); font-size: 14px;">${n.message}</div>
                         </div>
                         <span style="font-size: 11px; color: var(--text-muted); white-space: nowrap; margin-right: 12px;">
                             ${new Date(n.created_at).toLocaleDateString('ar-EG')}
-                            <br>
-                            ${new Date(n.created_at).toLocaleTimeString('ar-EG')}
+                            <br>${new Date(n.created_at).toLocaleTimeString('ar-EG')}
                         </span>
                     </div>
                     ${!n.is_read ? `<div style="margin-top: 8px;"><span class="badge badge-info">🔴 جديد</span></div>` : ''}
@@ -73,126 +72,34 @@ function getNotificationIcon(type) {
 }
 
 // ===== تحديد إشعار كمقروء =====
-async function markNotifReadReal(notifId) {
+window.markNotifReadReal = async function(notifId) {
     const result = await markNotificationAsRead(notifId);
     if (result.success) {
         loadSection('notifications');
         loadUserData();
+        showToast('✅', 'تم تحديد الإشعار كمقروء', 'success');
     }
-}
+};
 
 // ===== تحديد الكل كمقروء =====
-async function markAllRead() {
+window.markAllRead = async function() {
     if (!confirm('هل أنت متأكد من تحديد جميع الإشعارات كمقروءة؟')) return;
 
     try {
         const { error } = await supabaseClient
             .from('notifications')
-            .update({
-                is_read: true,
-                read_at: new Date().toISOString()
-            })
+            .update({ is_read: true, read_at: new Date().toISOString() })
             .eq('user_id', currentUser.id)
             .eq('is_read', false);
 
         if (error) throw error;
 
-        alert('✅ تم تحديد جميع الإشعارات كمقروءة');
+        showToast('✅', 'تم تحديد جميع الإشعارات كمقروءة', 'success');
         loadSection('notifications');
         loadUserData();
     } catch (error) {
-        alert('❌ خطأ: ' + error.message);
+        showToast('❌ خطأ', error.message, 'error');
     }
-}
+};
 
-// ===== إشعار فوري (Toast) =====
-function showToast(title, message, type = 'info', duration = 5000) {
-    const colors = {
-        success: 'var(--success)',
-        error: 'var(--danger)',
-        warning: 'var(--warning)',
-        info: 'var(--secondary)'
-    };
-
-    const icons = {
-        success: '✅',
-        error: '❌',
-        warning: '⚠️',
-        info: 'ℹ️'
-    };
-
-    const toast = document.createElement('div');
-    toast.style.cssText = `
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        background: var(--dark-card);
-        border: 1px solid ${colors[type] || 'var(--border-color)'};
-        border-left: 4px solid ${colors[type] || 'var(--primary)'};
-        border-radius: 12px;
-        padding: 16px 20px;
-        max-width: 400px;
-        z-index: 99999;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-        animation: slideInRight 0.3s ease forwards;
-        cursor: pointer;
-    `;
-
-    toast.innerHTML = `
-        <div style="display: flex; align-items: start; gap: 12px;">
-            <div style="font-size: 24px;">${icons[type] || '📌'}</div>
-            <div>
-                <div style="font-weight: 600; font-size: 16px;">${title}</div>
-                <div style="color: var(--text-secondary); font-size: 14px;">${message}</div>
-            </div>
-            <button onclick="this.parentElement.parentElement.remove()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 18px;">✕</button>
-        </div>
-    `;
-
-    document.body.appendChild(toast);
-
-    // إزالة الإشعار تلقائياً
-    setTimeout(() => {
-        if (toast.parentElement) {
-            toast.style.animation = 'slideOutRight 0.3s ease forwards';
-            setTimeout(() => toast.remove(), 300);
-        }
-    }, duration);
-
-    // إزالة عند النقر
-    toast.addEventListener('click', () => {
-        toast.remove();
-    });
-}
-
-// ===== إضافة أنيميشن للإشعارات =====
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes slideInRight {
-        from {
-            transform: translateX(100%);
-            opacity: 0;
-        }
-        to {
-            transform: translateX(0);
-            opacity: 1;
-        }
-    }
-    @keyframes slideOutRight {
-        from {
-            transform: translateX(0);
-            opacity: 1;
-        }
-        to {
-            transform: translateX(100%);
-            opacity: 0;
-        }
-    }
-`;
-document.head.appendChild(style);
-
-// ===== تصدير الدوال =====
-window.getNotificationsHTML = getNotificationsHTML;
-window.markNotifReadReal = markNotifReadReal;
-window.markAllRead = markAllRead;
-window.showToast = showToast;
+console.log('🔔 نظام الإشعارات جاهز!');
