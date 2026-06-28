@@ -4,8 +4,8 @@
 
 // ===== إعدادات Supabase =====
 // 🔴 استبدل هذه القيم بمفاتيح مشروعك من Supabase
-const SUPABASE_URL = 'https://your-project-id.supabase.co';
-const SUPABASE_ANON_KEY = 'your-anon-key-here';
+const SUPABASE_URL = 'https://mpzupnectsanzjfqipul.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_DVd_t9iidktvf0isGGixLA_Ffv3bLrF';
 
 // ===== إنشاء عميل Supabase =====
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
