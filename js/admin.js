@@ -1,5 +1,5 @@
 // ==========================================================
-// RewardHub - Admin.js (النسخة المصححة)
+// RewardHub - Admin.js (النسخة النهائية)
 // ==========================================================
 
 // ===== عناصر الصفحة =====
@@ -81,10 +81,11 @@ function showDashboard() {
     loadDashboardStats();
     loadSection('dashboard');
     loadAdminStats();
+    loadWalletStats();
 }
 
 // ==========================================================
-// ===== تسجيل الدخول (المصحح) =====
+// ===== تسجيل الدخول =====
 // ==========================================================
 
 loginForm.addEventListener('submit', async function(e) {
@@ -325,9 +326,11 @@ function loadSectionContent(section) {
             break;
         case 'logs':
             content.innerHTML = getLogsHTML();
+            setTimeout(loadLogs, 300);
             break;
         case 'wallet':
             content.innerHTML = getWalletHTML();
+            setTimeout(loadWalletStats, 300);
             break;
         case 'ad_requests':
             content.innerHTML = getAdRequestsHTML();
@@ -538,10 +541,6 @@ function getDashboardHTML() {
         </div>
     `;
 }
-
-// ==========================================================
-// ===== دوال الأقسام الأخرى (اختصاراً) =====
-// ==========================================================
 
 function getUsersHTML() {
     return `
@@ -1411,22 +1410,23 @@ function getLogsHTML() {
 
         <div class="admin-form" style="margin-bottom: 20px;">
             <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-                <input type="text" class="form-control" placeholder="🔍 بحث في السجل..." style="flex: 1; min-width: 200px;" />
-                <select class="form-control" style="width: auto;">
-                    <option>جميع العمليات</option>
-                    <option>تسجيل دخول</option>
-                    <option>مهمة</option>
-                    <option>سحب</option>
-                    <option>جائزة</option>
+                <input type="text" id="logsSearchInput" class="form-control" placeholder="🔍 بحث في السجل..." style="flex: 1; min-width: 200px;" onkeyup="searchLogs()" />
+                <select id="logsFilterSelect" class="form-control" style="width: auto;" onchange="filterLogs()">
+                    <option value="all">جميع العمليات</option>
+                    <option value="login">تسجيل دخول</option>
+                    <option value="task">مهمة</option>
+                    <option value="withdrawal">سحب</option>
+                    <option value="prize">جائزة</option>
+                    <option value="admin">إدارة</option>
                 </select>
-                <button class="btn btn-primary"><i class="fas fa-search"></i> بحث</button>
-                <button class="btn btn-secondary"><i class="fas fa-sync"></i> تحديث</button>
+                <button class="btn btn-primary" onclick="loadLogs()"><i class="fas fa-sync"></i> تحديث</button>
             </div>
         </div>
 
         <div class="admin-table-wrapper">
             <div class="table-header">
                 <h4>📋 سجل الأحداث</h4>
+                <span id="logsCount" style="color: var(--text-secondary); font-size: 13px;">0 سجل</span>
             </div>
             <div class="table-container">
                 <table>
@@ -1439,28 +1439,8 @@ function getLogsHTML() {
                             <th>IP</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <tr>
-                            <td>2026-06-28 14:32:15</td>
-                            <td>Ahmed_Gamer</td>
-                            <td><span class="badge badge-success">تسجيل دخول</span></td>
-                            <td>تسجيل دخول ناجح</td>
-                            <td>192.168.1.1</td>
-                        </tr>
-                        <tr>
-                            <td>2026-06-28 14:28:42</td>
-                            <td>Crypto_Warrior</td>
-                            <td><span class="badge badge-info">مهمة</span></td>
-                            <td>أكمل مهمة فيديو 30 ثانية</td>
-                            <td>192.168.1.2</td>
-                        </tr>
-                        <tr>
-                            <td>2026-06-28 14:15:03</td>
-                            <td>FreeFire_King</td>
-                            <td><span class="badge badge-warning">سحب</span></td>
-                            <td>طلب سحب $25.00</td>
-                            <td>192.168.1.3</td>
-                        </tr>
+                    <tbody id="logsTableBody">
+                        <tr><td colspan="5" style="text-align: center; color: var(--text-secondary);">جاري التحميل...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -1474,50 +1454,73 @@ function getWalletHTML() {
             <i class="fas fa-wallet"></i> محفظة الأدمن
         </h2>
 
-        <div class="admin-stats-grid">
+        <div class="admin-stats-grid" id="walletStats">
             <div class="admin-stat-card gradient-card">
                 <div class="stat-icon">💵</div>
-                <div class="stat-number" style="-webkit-text-fill-color: white;">$12,450.00</div>
+                <div class="stat-number" style="-webkit-text-fill-color: white;" id="walletTotal">$0.00</div>
                 <div class="stat-label">إجمالي المحفظة</div>
             </div>
             <div class="admin-stat-card">
                 <div class="stat-icon">📤</div>
-                <div class="stat-number" style="color: var(--danger);">$8,230.00</div>
+                <div class="stat-number" style="color: var(--danger);" id="walletWithdrawn">$0.00</div>
                 <div class="stat-label">إجمالي السحوبات</div>
             </div>
             <div class="admin-stat-card">
                 <div class="stat-icon">📥</div>
-                <div class="stat-number" style="color: var(--success);">$20,680.00</div>
+                <div class="stat-number" style="color: var(--success);" id="walletDeposited">$0.00</div>
                 <div class="stat-label">إجمالي الإيداعات</div>
             </div>
             <div class="admin-stat-card">
                 <div class="stat-icon">🏦</div>
-                <div class="stat-number" style="color: var(--secondary);">$4,220.00</div>
+                <div class="stat-number" style="color: var(--secondary);" id="walletBalance">$0.00</div>
                 <div class="stat-label">الرصيد المتاح</div>
             </div>
         </div>
 
         <div class="admin-form">
             <h4>➕ إضافة رصيد للمستخدم</h4>
-            <form>
+            <form id="addBalanceForm" onsubmit="addUserBalance(event)">
                 <div class="form-row">
                     <div class="form-group">
-                        <label>اسم المستخدم</label>
-                        <input type="text" class="form-control" placeholder="أدخل اسم المستخدم" />
+                        <label>👤 اسم المستخدم</label>
+                        <input type="text" id="balanceUsername" class="form-control" placeholder="أدخل اسم المستخدم" required />
                     </div>
                     <div class="form-group">
-                        <label>المبلغ ($)</label>
-                        <input type="number" class="form-control" placeholder="مثال: 10.00" step="0.01" />
+                        <label>💰 المبلغ ($)</label>
+                        <input type="number" id="balanceAmount" class="form-control" placeholder="مثال: 10.00" step="0.01" min="0.01" required />
                     </div>
                     <div class="form-group full-width">
-                        <label>سبب الإضافة</label>
-                        <textarea class="form-control" rows="2" placeholder="سبب إضافة الرصيد"></textarea>
+                        <label>📝 سبب الإضافة</label>
+                        <textarea id="balanceReason" class="form-control" rows="2" placeholder="سبب إضافة الرصيد"></textarea>
                     </div>
                 </div>
                 <div class="form-actions">
                     <button type="submit" class="btn btn-success"><i class="fas fa-plus"></i> إضافة رصيد</button>
                 </div>
+                <div id="balanceResponse" style="display: none; margin-top: 12px;"></div>
             </form>
+        </div>
+
+        <div class="admin-table-wrapper" style="margin-top: 20px;">
+            <div class="table-header">
+                <h4>📊 سجل المحفظة</h4>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>التاريخ</th>
+                            <th>المستخدم</th>
+                            <th>العملية</th>
+                            <th>المبلغ</th>
+                            <th>الرصيد الجديد</th>
+                        </tr>
+                    </thead>
+                    <tbody id="walletHistoryBody">
+                        <tr><td colspan="5" style="text-align: center; color: var(--text-secondary);">جاري التحميل...</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     `;
 }
@@ -1644,6 +1647,354 @@ async function loadWithdrawalsTable() {
     }
 }
 
+// ==========================================================
+// ===== دوال سجل العمليات =====
+// ==========================================================
+
+async function loadLogs() {
+    try {
+        const { data: logs, error } = await supabaseClient
+            .from('logs')
+            .select('*, users(username)')
+            .order('created_at', { ascending: false })
+            .limit(50);
+
+        if (error) throw error;
+
+        const tbody = document.getElementById('logsTableBody');
+        const countEl = document.getElementById('logsCount');
+
+        if (!tbody) return;
+
+        if (!logs || logs.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-secondary);">لا توجد سجلات</td></tr>';
+            if (countEl) countEl.textContent = '0 سجل';
+            return;
+        }
+
+        if (countEl) countEl.textContent = `${logs.length} سجل`;
+
+        const eventColors = {
+            'login': 'badge-success',
+            'task': 'badge-info',
+            'withdrawal': 'badge-warning',
+            'prize': 'badge-primary',
+            'admin': 'badge-danger',
+            'system': 'badge-secondary'
+        };
+
+        tbody.innerHTML = logs.map(log => `
+            <tr>
+                <td style="font-size: 13px; color: var(--text-muted);">${new Date(log.created_at).toLocaleString('ar-EG')}</td>
+                <td>${log.users?.username || 'غير معروف'}</td>
+                <td><span class="badge ${eventColors[log.event_type] || 'badge-secondary'}">${log.event_type || 'عام'}</span></td>
+                <td>${log.event_description || log.details || '-'}</td>
+                <td style="font-size: 13px; color: var(--text-muted);">${log.ip_address || '-'}</td>
+            </tr>
+        `).join('');
+
+    } catch (error) {
+        console.error('❌ خطأ في تحميل السجلات:', error);
+        const tbody = document.getElementById('logsTableBody');
+        if (tbody) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--danger);">❌ خطأ في تحميل السجلات</td></tr>';
+        }
+    }
+}
+
+window.searchLogs = function() {
+    loadLogs();
+};
+
+window.filterLogs = function() {
+    loadLogs();
+};
+
+async function addLog(userId, eventType, description, details = null) {
+    try {
+        const { error } = await supabaseClient
+            .from('logs')
+            .insert([{
+                user_id: userId,
+                event_type: eventType,
+                event_description: description,
+                details: details,
+                ip_address: await getIPAddress()
+            }]);
+
+        if (error) console.error('❌ خطأ في إضافة السجل:', error);
+    } catch (e) {
+        console.error('❌ خطأ:', e);
+    }
+}
+
+// ==========================================================
+// ===== دوال المحفظة =====
+// ==========================================================
+
+async function loadWalletStats() {
+    try {
+        // إجمالي الأرباح (من جدول users)
+        const { data: earningsData, error: earningsError } = await supabaseClient
+            .from('users')
+            .select('total_earned');
+
+        if (!earningsError && earningsData) {
+            const total = earningsData.reduce((sum, u) => sum + (u.total_earned || 0), 0);
+            const el = document.getElementById('walletDeposited');
+            if (el) el.textContent = '$' + total.toFixed(2);
+        }
+
+        // إجمالي السحوبات (من جدول withdrawals)
+        const { data: withdrawalsData, error: withdrawalsError } = await supabaseClient
+            .from('withdrawals')
+            .select('amount')
+            .eq('status', 'processed');
+
+        if (!withdrawalsError && withdrawalsData) {
+            const total = withdrawalsData.reduce((sum, w) => sum + (w.amount || 0), 0);
+            const el = document.getElementById('walletWithdrawn');
+            if (el) el.textContent = '$' + total.toFixed(2);
+        }
+
+        // الرصيد المتاح (مجموع أرصدة المستخدمين)
+        const { data: balanceData, error: balanceError } = await supabaseClient
+            .from('users')
+            .select('balance');
+
+        if (!balanceError && balanceData) {
+            const total = balanceData.reduce((sum, u) => sum + (u.balance || 0), 0);
+            const el = document.getElementById('walletBalance');
+            if (el) el.textContent = '$' + total.toFixed(2);
+        }
+
+        // إجمالي المحفظة
+        const depositedEl = document.getElementById('walletDeposited');
+        const balanceEl = document.getElementById('walletBalance');
+        const totalEl = document.getElementById('walletTotal');
+        
+        if (depositedEl && balanceEl && totalEl) {
+            const deposited = parseFloat(depositedEl.textContent.replace('$', '') || 0);
+            const balance = parseFloat(balanceEl.textContent.replace('$', '') || 0);
+            totalEl.textContent = '$' + (deposited + balance).toFixed(2);
+        }
+
+        await loadWalletHistory();
+
+    } catch (e) {
+        console.error('❌ خطأ في تحميل إحصائيات المحفظة:', e);
+    }
+}
+
+async function loadWalletHistory() {
+    try {
+        const { data: history, error } = await supabaseClient
+            .from('deposit_history')
+            .select('*, users(username)')
+            .order('created_at', { ascending: false })
+            .limit(20);
+
+        const tbody = document.getElementById('walletHistoryBody');
+        if (!tbody) return;
+
+        if (error || !history || history.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-secondary);">لا توجد عمليات</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = history.map(h => `
+            <tr>
+                <td style="font-size: 13px; color: var(--text-muted);">${new Date(h.created_at).toLocaleString('ar-EG')}</td>
+                <td>${h.users?.username || 'غير معروف'}</td>
+                <td><span class="badge badge-success">إيداع</span></td>
+                <td style="color: var(--success); font-weight: 700;">+$${parseFloat(h.amount).toFixed(2)}</td>
+                <td>-</td>
+            </tr>
+        `).join('');
+
+    } catch (e) {
+        console.error('❌ خطأ في تحميل سجل المحفظة:', e);
+        const tbody = document.getElementById('walletHistoryBody');
+        if (tbody) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--danger);">❌ خطأ في التحميل</td></tr>';
+        }
+    }
+}
+
+// ===== إضافة رصيد للمستخدم =====
+window.addUserBalance = async function(e) {
+    e.preventDefault();
+
+    const username = document.getElementById('balanceUsername').value.trim();
+    const amount = parseFloat(document.getElementById('balanceAmount').value);
+    const reason = document.getElementById('balanceReason').value.trim();
+    const responseEl = document.getElementById('balanceResponse');
+
+    responseEl.style.display = 'none';
+
+    if (!username) {
+        responseEl.style.display = 'block';
+        responseEl.className = 'admin-response error';
+        responseEl.textContent = '⚠️ يرجى إدخال اسم المستخدم';
+        return;
+    }
+
+    if (!amount || amount <= 0) {
+        responseEl.style.display = 'block';
+        responseEl.className = 'admin-response error';
+        responseEl.textContent = '⚠️ يرجى إدخال مبلغ صحيح';
+        return;
+    }
+
+    // البحث عن المستخدم
+    const { data: user, error: userError } = await supabaseClient
+        .from('users')
+        .select('id, balance')
+        .eq('username', username)
+        .single();
+
+    if (userError || !user) {
+        responseEl.style.display = 'block';
+        responseEl.className = 'admin-response error';
+        responseEl.textContent = '❌ المستخدم غير موجود';
+        return;
+    }
+
+    if (!confirm(`هل أنت متأكد من إضافة $${amount.toFixed(2)} للمستخدم ${username}؟`)) return;
+
+    try {
+        // تحديث رصيد المستخدم
+        const { error: updateError } = await supabaseClient
+            .from('users')
+            .update({
+                balance: user.balance + amount,
+                total_earned: supabaseClient.rpc('increment_balance', {
+                    user_id: user.id,
+                    amount: amount
+                })
+            })
+            .eq('id', user.id);
+
+        if (updateError) throw updateError;
+
+        // تسجيل في سجل الإيداعات
+        const { error: depositError } = await supabaseClient
+            .from('deposit_history')
+            .insert([{
+                user_id: user.id,
+                amount: amount,
+                method: 'Admin',
+                status: 'completed',
+                transaction_id: 'ADMIN-' + Date.now()
+            }]);
+
+        if (depositError) throw depositError;
+
+        // تسجيل في سجل العمليات
+        await addLog(adminUser?.id, 'admin', `إضافة رصيد للمستخدم ${username} بمبلغ $${amount.toFixed(2)}`, {
+            username: username,
+            amount: amount,
+            reason: reason || 'لا يوجد سبب'
+        });
+
+        responseEl.style.display = 'block';
+        responseEl.className = 'admin-response success';
+        responseEl.textContent = `✅ تم إضافة $${amount.toFixed(2)} للمستخدم ${username} بنجاح!`;
+
+        document.getElementById('balanceUsername').value = '';
+        document.getElementById('balanceAmount').value = '';
+        document.getElementById('balanceReason').value = '';
+
+        // تحديث الإحصائيات
+        loadWalletStats();
+
+    } catch (error) {
+        responseEl.style.display = 'block';
+        responseEl.className = 'admin-response error';
+        responseEl.textContent = '❌ ' + error.message;
+    }
+};
+
+// ==========================================================
+// ===== دوال إدارة السحوبات =====
+// ==========================================================
+
+window.approveWithdrawal = async function(withdrawalId) {
+    if (!confirm('✅ هل أنت متأكد من قبول هذا السحب؟')) return;
+
+    try {
+        const { error } = await supabaseClient
+            .from('withdrawals')
+            .update({
+                status: 'approved',
+                processed_by: adminUser?.id,
+                processed_at: new Date().toISOString(),
+                admin_notes: 'تمت الموافقة على السحب'
+            })
+            .eq('id', withdrawalId);
+
+        if (error) throw error;
+
+        alert('✅ تم قبول السحب بنجاح!');
+        loadWithdrawalsTable();
+        loadAdminStats();
+        loadWalletStats();
+    } catch (error) {
+        alert('❌ خطأ: ' + error.message);
+    }
+};
+
+window.rejectWithdrawal = async function(withdrawalId) {
+    const reason = prompt('❌ سبب الرفض (اختياري):');
+    if (reason === null) return;
+
+    try {
+        const { data: withdrawal, error: getError } = await supabaseClient
+            .from('withdrawals')
+            .select('user_id, amount')
+            .eq('id', withdrawalId)
+            .single();
+
+        if (getError) throw getError;
+
+        const { error } = await supabaseClient
+            .from('withdrawals')
+            .update({
+                status: 'rejected',
+                processed_by: adminUser?.id,
+                processed_at: new Date().toISOString(),
+                admin_notes: reason || 'تم رفض السحب من قبل الإدارة'
+            })
+            .eq('id', withdrawalId);
+
+        if (error) throw error;
+
+        // إعادة الرصيد للمستخدم
+        const { error: balanceError } = await supabaseClient
+            .from('users')
+            .update({
+                balance: supabaseClient.rpc('increment_balance', {
+                    user_id: withdrawal.user_id,
+                    amount: withdrawal.amount
+                })
+            })
+            .eq('id', withdrawal.user_id);
+
+        if (balanceError) throw balanceError;
+
+        alert('❌ تم رفض السحب وإعادة المبلغ للمستخدم');
+        loadWithdrawalsTable();
+        loadAdminStats();
+        loadWalletStats();
+    } catch (error) {
+        alert('❌ خطأ: ' + error.message);
+    }
+};
+
+// ==========================================================
+// ===== دوال إدارة طلبات الإعلان =====
+// ==========================================================
+
 async function loadAdRequests() {
     try {
         const { data: requests, error } = await supabaseClient
@@ -1660,9 +2011,15 @@ async function loadAdRequests() {
         const approved = requests?.filter(r => r.status === 'approved').length || 0;
         const rejected = requests?.filter(r => r.status === 'rejected').length || 0;
 
-        document.getElementById('pendingCount').textContent = `${pending} معلق`;
-        document.getElementById('approvedCount').textContent = `${approved} مقبول`;
-        document.getElementById('rejectedCount').textContent = `${rejected} مرفوض`;
+        const pendingCountEl = document.getElementById('pendingCount');
+        const approvedCountEl = document.getElementById('approvedCount');
+        const rejectedCountEl = document.getElementById('rejectedCount');
+        const pendingAdsEl = document.getElementById('pendingAdsCount');
+        
+        if (pendingCountEl) pendingCountEl.textContent = `${pending} معلق`;
+        if (approvedCountEl) approvedCountEl.textContent = `${approved} مقبول`;
+        if (rejectedCountEl) rejectedCountEl.textContent = `${rejected} مرفوض`;
+        if (pendingAdsEl) pendingAdsEl.textContent = pending;
 
         if (!requests || requests.length === 0) {
             tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-secondary);">لا توجد طلبات إعلان</td></tr>';
@@ -1714,86 +2071,12 @@ async function loadAdRequests() {
 
     } catch (error) {
         console.error('❌ خطأ في تحميل طلبات الإعلان:', error);
+        const tbody = document.getElementById('adRequestsTableBody');
+        if (tbody) {
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--danger);">❌ خطأ في التحميل</td></tr>';
+        }
     }
 }
-
-// ==========================================================
-// ===== دوال إدارة السحوبات =====
-// ==========================================================
-
-window.approveWithdrawal = async function(withdrawalId) {
-    if (!confirm('✅ هل أنت متأكد من قبول هذا السحب؟')) return;
-
-    try {
-        const { error } = await supabaseClient
-            .from('withdrawals')
-            .update({
-                status: 'approved',
-                processed_by: adminUser?.id,
-                processed_at: new Date().toISOString(),
-                admin_notes: 'تمت الموافقة على السحب'
-            })
-            .eq('id', withdrawalId);
-
-        if (error) throw error;
-
-        alert('✅ تم قبول السحب بنجاح!');
-        loadWithdrawalsTable();
-        loadAdminStats();
-    } catch (error) {
-        alert('❌ خطأ: ' + error.message);
-    }
-};
-
-window.rejectWithdrawal = async function(withdrawalId) {
-    const reason = prompt('❌ سبب الرفض (اختياري):');
-    if (reason === null) return;
-
-    try {
-        const { data: withdrawal, error: getError } = await supabaseClient
-            .from('withdrawals')
-            .select('user_id, amount')
-            .eq('id', withdrawalId)
-            .single();
-
-        if (getError) throw getError;
-
-        const { error } = await supabaseClient
-            .from('withdrawals')
-            .update({
-                status: 'rejected',
-                processed_by: adminUser?.id,
-                processed_at: new Date().toISOString(),
-                admin_notes: reason || 'تم رفض السحب من قبل الإدارة'
-            })
-            .eq('id', withdrawalId);
-
-        if (error) throw error;
-
-        // إعادة الرصيد للمستخدم
-        const { error: balanceError } = await supabaseClient
-            .from('users')
-            .update({
-                balance: supabaseClient.rpc('increment_balance', {
-                    user_id: withdrawal.user_id,
-                    amount: withdrawal.amount
-                })
-            })
-            .eq('id', withdrawal.user_id);
-
-        if (balanceError) throw balanceError;
-
-        alert('❌ تم رفض السحب وإعادة المبلغ للمستخدم');
-        loadWithdrawalsTable();
-        loadAdminStats();
-    } catch (error) {
-        alert('❌ خطأ: ' + error.message);
-    }
-};
-
-// ==========================================================
-// ===== دوال إدارة طلبات الإعلان =====
-// ==========================================================
 
 window.approveAd = async function(requestId) {
     if (!confirm('✅ هل أنت متأكد من قبول طلب الإعلان هذا؟')) return;
