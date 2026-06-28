@@ -2,10 +2,71 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
     <title>RewardHub - أربح المال عبر الإنترنت</title>
     <link rel="stylesheet" href="css/style.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+        /* ===== تحسينات التوافق مع جميع الأجهزة ===== */
+        .ad-container {
+            max-width: 100%;
+            overflow: hidden;
+            margin: 20px auto;
+            text-align: center;
+        }
+        .ad-container iframe,
+        .ad-container img,
+        .ad-container div {
+            max-width: 100% !important;
+            height: auto !important;
+        }
+        /* تحسين عرض الإعلانات في الموبايل */
+        @media (max-width: 768px) {
+            .ad-container {
+                margin: 10px auto;
+                padding: 0 5px;
+            }
+            .ad-container div {
+                transform: scale(0.9);
+                transform-origin: center;
+            }
+        }
+        @media (max-width: 480px) {
+            .ad-container div {
+                transform: scale(0.8);
+                transform-origin: center;
+            }
+        }
+        /* تحسين النصوص في جميع الشاشات */
+        .hero h1 {
+            font-size: clamp(28px, 6vw, 64px);
+        }
+        .hero p {
+            font-size: clamp(14px, 2vw, 20px);
+        }
+        .section-title {
+            font-size: clamp(24px, 4vw, 40px);
+        }
+        .grid-3, .grid-4 {
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+        }
+        .stats {
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));
+        }
+        /* تحسين الأزرار في الموبايل */
+        .btn {
+            padding: clamp(8px, 1.5vw, 12px) clamp(16px, 2.5vw, 28px);
+            font-size: clamp(13px, 1.5vw, 16px);
+        }
+        /* تحسين الشريط الجانبي */
+        .dashboard-sidebar {
+            width: clamp(60px, 20vw, 240px);
+            min-width: clamp(60px, 15vw, 240px);
+        }
+        .dashboard-content {
+            padding: clamp(10px, 2vw, 24px);
+        }
+    </style>
 </head>
 <body>
 
@@ -20,7 +81,6 @@
                 <li><a href="#prizes">الجوائز</a></li>
                 <li><a href="#withdrawals">السحب</a></li>
                 <li><a href="#faq">الأسئلة</a></li>
-                <!-- ===== زر دخول المشرف ===== -->
                 <li>
                     <a href="admin.html" class="btn btn-admin btn-sm">
                         <i class="fas fa-lock"></i> 🔐 دخول المشرف
@@ -120,6 +180,14 @@
             </div>
         </div>
     </section>
+
+    <!-- ============================================================ -->
+    <!--  إعلان الراية الأصلية من Adsterra (Native Banner)  -->
+    <!-- ============================================================ -->
+    <div class="container ad-container" style="margin: 20px auto;">
+        <div id="container-ee61585d29dba5a0cf3dff8a13804dc8"></div>
+        <script async="async" data-cfasync="false" src="https://pl30116729.effectivecpmnetwork.com/ee61585d29dba5a0cf3dff8a13804dc8/invoke.js"></script>
+    </div>
 
     <!-- ============================================================ -->
     <!--  الجوائز  -->
@@ -309,6 +377,16 @@
     </footer>
 
     <!-- ============================================================ -->
+    <!--  كود البار الاجتماعي من Adsterra (Social Bar)  -->
+    <!-- ============================================================ -->
+    <script src="https://pl30116727.effectivecpmnetwork.com/53/e5/3f/53e53f9697ac67f69dd1b234ede3a7df.js"></script>
+
+    <!-- ============================================================ -->
+    <!--  كود النافذة المنبثقة من Adsterra (Popunder)  -->
+    <!-- ============================================================ -->
+    <script src="https://pl30116730.effectivecpmnetwork.com/e7/65/38/e76538eb006f83dca96a478367fb715d.js"></script>
+
+    <!-- ============================================================ -->
     <!--  JavaScript  -->
     <!-- ============================================================ -->
     <script src="js/main.js"></script>
@@ -317,6 +395,24 @@
         document.getElementById('mobileMenu').addEventListener('click', function() {
             document.getElementById('navLinks').classList.toggle('show');
         });
+
+        // تحسين عرض الإعلانات عند تغيير حجم الشاشة
+        function resizeAds() {
+            const adContainers = document.querySelectorAll('.ad-container');
+            adContainers.forEach(function(container) {
+                const width = window.innerWidth;
+                if (width < 480) {
+                    container.style.transform = 'scale(0.8)';
+                } else if (width < 768) {
+                    container.style.transform = 'scale(0.9)';
+                } else {
+                    container.style.transform = 'scale(1)';
+                }
+            });
+        }
+
+        window.addEventListener('resize', resizeAds);
+        window.addEventListener('load', resizeAds);
     </script>
 </body>
 </html>
