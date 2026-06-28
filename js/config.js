@@ -5,8 +5,8 @@
 const REWARDHUB_CONFIG = {
     // ===== Supabase =====
     supabase: {
-        url: 'https://your-project-id.supabase.co',
-        anonKey: 'your-anon-key-here'
+        url: 'https://mpzupnectsanzjfqipul.supabase.co',
+        anonKey: 'sb_publishable_DVd_t9iidktvf0isGGixLA_Ffv3bLrF'
     },
 
     // ===== شركات الإعلانات (Banner Ads) =====
