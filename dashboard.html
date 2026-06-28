@@ -12,7 +12,7 @@
 <body>
 
     <!-- ========================================================== -->
-    <!--  شاشة تسجيل الدخول / التسجيل (إذا لم يكن مسجلاً)  -->
+    <!--  شاشة تسجيل الدخول / التسجيل  -->
     <!-- ========================================================== -->
     <div id="authScreen" class="auth-screen">
         <div class="auth-container">
@@ -22,6 +22,30 @@
                     <span>🏆</span>
                     <h2>RewardHub</h2>
                     <p>سجل الدخول للبدء في الربح</p>
+                </div>
+
+                <!-- ===== أزرار تسجيل الدخول السريع ===== -->
+                <div class="social-login-section">
+                    <p style="color: var(--text-secondary); text-align: center; margin-bottom: 12px;">
+                        🚀 سجل دخول بسرعة عبر
+                    </p>
+                    <div class="social-buttons">
+                        <button onclick="loginWithGoogle()" class="btn-social google-btn">
+                            <i class="fab fa-google"></i> Google
+                        </button>
+                        <button onclick="loginWithGitHub()" class="btn-social github-btn">
+                            <i class="fab fa-github"></i> GitHub
+                        </button>
+                        <button onclick="loginWithDiscord()" class="btn-social discord-btn">
+                            <i class="fab fa-discord"></i> Discord
+                        </button>
+                        <button onclick="loginWithX()" class="btn-social x-btn">
+                            <i class="fab fa-x-twitter"></i> X
+                        </button>
+                    </div>
+                    <div style="text-align: center; margin: 16px 0; color: var(--text-muted);">
+                        <span>━━━━━━━━━ أو ━━━━━━━━━</span>
+                    </div>
                 </div>
 
                 <!-- تبويب تسجيل الدخول / التسجيل -->
@@ -74,7 +98,7 @@
     </div>
 
     <!-- ========================================================== -->
-    <!--  لوحة المستخدم  (تظهر بعد تسجيل الدخول)  -->
+    <!--  لوحة المستخدم  -->
     <!-- ========================================================== -->
     <div id="userDashboard" class="user-dashboard" style="display:none;">
 
@@ -133,6 +157,10 @@
                         <i class="fas fa-bell"></i> <span>الإشعارات</span>
                         <span class="badge badge-danger" id="notifBadge">0</span>
                     </a>
+                    <a href="#" class="sidebar-item" data-section="advertise" style="background: linear-gradient(135deg, rgba(255,107,53,0.1), rgba(255,107,53,0.05)); border: 1px solid var(--accent); margin: 4px 0; border-radius: 10px;">
+                        <i class="fas fa-bullhorn" style="color: var(--accent);"></i> 
+                        <span style="color: var(--accent); font-weight: 700;">📢 أعلن معنا</span>
+                    </a>
                     <a href="#" class="sidebar-item" data-section="settings">
                         <i class="fas fa-cog"></i> <span>الإعدادات</span>
                     </a>
@@ -144,10 +172,7 @@
 
             <!-- ===== المحتوى الرئيسي ===== -->
             <main class="dashboard-content" id="dashboardContent">
-                <!-- سيتم تعبئتها بواسطة JavaScript -->
-                <div id="sectionDashboard" class="dashboard-section active">
-                    <div id="dashboardMainContent"></div>
-                </div>
+                <div id="sectionDashboard" class="dashboard-section active"></div>
                 <div id="sectionTasks" class="dashboard-section" style="display:none;"></div>
                 <div id="sectionOffers" class="dashboard-section" style="display:none;"></div>
                 <div id="sectionSurveys" class="dashboard-section" style="display:none;"></div>
@@ -158,6 +183,7 @@
                 <div id="sectionWithdraw" class="dashboard-section" style="display:none;"></div>
                 <div id="sectionReferrals" class="dashboard-section" style="display:none;"></div>
                 <div id="sectionNotifications" class="dashboard-section" style="display:none;"></div>
+                <div id="sectionAdvertise" class="dashboard-section" style="display:none;"></div>
                 <div id="sectionSettings" class="dashboard-section" style="display:none;"></div>
                 <div id="sectionProfile" class="dashboard-section" style="display:none;"></div>
             </main>
@@ -170,6 +196,12 @@
     <script src="js/supabase-client.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/database.js"></script>
+    <script src="js/withdraw.js"></script>
+    <script src="js/notifications.js"></script>
+    <script src="js/ads.js"></script>
+    <script src="js/offerwalls.js"></script>
+    <script src="js/faucets.js"></script>
+    <script src="js/config.js"></script>
     <script src="js/dashboard.js"></script>
 </body>
 </html>
