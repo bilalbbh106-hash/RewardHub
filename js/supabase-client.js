@@ -3,12 +3,18 @@
 // ==========================================================
 
 // ===== إعدادات Supabase =====
-// 🔴 هاد المفاتيح تاع Supabase ديالك - بدلهم بمفاتيحك!
-const SUPABASE_URL = 'https://mpzupnectsanzjfqipul.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_DVd_t9iidktvf0isGGixLA_Ffv3bLrF';
+// 🔴 استبدل هذه القيم بمفاتيح مشروعك من Supabase
+const SUPABASE_URL = 'https://your-project-id.supabase.co';
+const SUPABASE_ANON_KEY = 'your-anon-key-here';
 
 // ===== إنشاء عميل Supabase =====
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: {
+        autoRefreshToken: true,
+        persistSession: true,
+        detectSessionInUrl: true
+    }
+});
 
 // ===== دالة للتحقق من الاتصال =====
 async function testSupabaseConnection() {
