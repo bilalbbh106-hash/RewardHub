@@ -1,5 +1,5 @@
 /* ==========================================================
-   RewardHub - Admin.css (النسخة المتجاوبة)
+   RewardHub - Admin.css
    ========================================================== */
 
 /* ===== شاشة تسجيل الدخول ===== */
@@ -24,10 +24,10 @@
 
 .admin-login-box {
     background: var(--dark-card);
-    border: 2px solid var(--primary);
+    border: 2px solid var(--accent);
     border-radius: var(--radius);
-    padding: 40px 32px;
-    box-shadow: 0 0 40px rgba(108, 60, 225, 0.15);
+    padding: 48px 32px;
+    box-shadow: 0 0 60px rgba(255, 107, 53, 0.1);
 }
 
 .admin-login-logo {
@@ -53,6 +53,27 @@
     color: var(--text-secondary);
     font-size: 14px;
     margin-top: 4px;
+}
+
+.admin-login-form .form-group {
+    margin-bottom: 20px;
+}
+
+.admin-login-form .form-control {
+    padding: 14px 16px;
+    font-size: 16px;
+    background: var(--dark-input);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    color: var(--text-primary);
+    width: 100%;
+    transition: all 0.3s ease;
+}
+
+.admin-login-form .form-control:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.2);
+    outline: none;
 }
 
 .admin-login-footer {
@@ -81,13 +102,13 @@
 /* ===== الشريط العلوي ===== */
 .admin-navbar {
     background: var(--dark-card);
-    border-bottom: 2px solid var(--primary);
-    padding: 10px 20px;
+    border-bottom: 2px solid var(--accent);
+    padding: 12px 24px;
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
-    z-index: 1000;
+    z-index: 100;
 }
 
 .admin-nav-container {
@@ -100,7 +121,7 @@
 .admin-nav-brand {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
 }
 
 .admin-nav-brand span {
@@ -127,7 +148,7 @@
 .admin-nav-actions {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 16px;
     flex-wrap: wrap;
 }
 
@@ -139,8 +160,8 @@
 /* ===== جسم لوحة الإدارة ===== */
 .admin-body {
     display: flex;
-    margin-top: 60px;
-    min-height: calc(100vh - 60px);
+    margin-top: 68px;
+    min-height: calc(100vh - 68px);
 }
 
 /* ===== الشريط الجانبي ===== */
@@ -149,14 +170,13 @@
     min-width: 240px;
     background: var(--dark-card);
     border-right: 1px solid var(--border-color);
-    padding: 12px 0;
+    padding: 16px 0;
     position: sticky;
-    top: 60px;
-    height: calc(100vh - 60px);
+    top: 68px;
+    height: calc(100vh - 68px);
     overflow-y: auto;
     scrollbar-width: thin;
-    z-index: 100;
-    flex-shrink: 0;
+    z-index: 50;
 }
 
 .admin-sidebar::-webkit-scrollbar {
@@ -190,14 +210,14 @@
 }
 
 .admin-nav-item:hover {
-    background: rgba(108, 60, 225, 0.1);
+    background: rgba(108, 60, 225, 0.08);
     color: var(--text-primary);
 }
 
 .admin-nav-item.active {
-    background: rgba(108, 60, 225, 0.15);
+    background: rgba(108, 60, 225, 0.12);
     color: var(--primary-light);
-    border-right: 3px solid var(--primary);
+    border-right: 3px solid var(--accent);
     border-radius: 10px 0 0 10px;
 }
 
@@ -215,7 +235,7 @@
 }
 
 .admin-nav-item .badge {
-    margin-right: 0;
+    margin-right: auto;
     font-size: 10px;
     padding: 2px 8px;
     flex-shrink: 0;
@@ -224,9 +244,9 @@
 /* ===== المحتوى الرئيسي ===== */
 .admin-content {
     flex: 1;
-    padding: 20px 24px;
+    padding: 24px 32px;
     width: 100%;
-    min-height: calc(100vh - 60px);
+    min-height: calc(100vh - 68px);
     overflow-x: hidden;
     max-width: calc(100% - 240px);
 }
@@ -239,7 +259,7 @@
 /* ===== بطاقات الإحصائيات ===== */
 .admin-stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 16px;
     margin-bottom: 24px;
 }
@@ -248,7 +268,7 @@
     background: var(--dark-card);
     border: 1px solid var(--border-color);
     border-radius: var(--radius);
-    padding: 18px 20px;
+    padding: 20px;
     transition: all 0.3s ease;
 }
 
@@ -258,13 +278,14 @@
 }
 
 .admin-stat-card .stat-icon {
-    font-size: 22px;
+    font-size: 24px;
     margin-bottom: 4px;
 }
 
 .admin-stat-card .stat-number {
-    font-size: 24px;
+    font-size: 26px;
     font-weight: 700;
+    color: var(--text-primary);
 }
 
 .admin-stat-card .stat-label {
@@ -284,13 +305,17 @@
 }
 
 .admin-table-wrapper .table-header {
-    padding: 14px 20px;
+    padding: 16px 24px;
     border-bottom: 1px solid var(--border-color);
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 12px;
+}
+
+.admin-table-wrapper .table-header h4 {
+    font-size: 16px;
 }
 
 .admin-table-wrapper table {
@@ -299,7 +324,7 @@
 }
 
 .admin-table-wrapper table th {
-    padding: 10px 14px;
+    padding: 12px 16px;
     font-size: 13px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -309,7 +334,7 @@
 }
 
 .admin-table-wrapper table td {
-    padding: 10px 14px;
+    padding: 12px 16px;
     font-size: 14px;
     border-bottom: 1px solid var(--border-color);
 }
@@ -347,6 +372,34 @@
     flex-wrap: wrap;
 }
 
+.admin-response {
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-top: 12px;
+    display: none;
+}
+
+.admin-response.success {
+    display: block;
+    background: rgba(0, 230, 118, 0.1);
+    border: 1px solid var(--success);
+    color: var(--success);
+}
+
+.admin-response.error {
+    display: block;
+    background: rgba(255, 23, 68, 0.1);
+    border: 1px solid var(--danger);
+    color: var(--danger);
+}
+
+.admin-response.info {
+    display: block;
+    background: rgba(0, 212, 255, 0.1);
+    border: 1px solid var(--secondary);
+    color: var(--secondary);
+}
+
 /* ===== مفتاح التفعيل ===== */
 .toggle-switch {
     position: relative;
@@ -355,7 +408,7 @@
     background: var(--dark-input);
     border-radius: 12px;
     cursor: pointer;
-    transition: var(--transition);
+    transition: all 0.3s ease;
     display: inline-block;
 }
 
@@ -371,40 +424,28 @@
     height: 20px;
     background: white;
     border-radius: 50%;
-    transition: var(--transition);
+    transition: all 0.3s ease;
 }
 
 .toggle-switch.active .toggle-slider {
     left: 22px;
 }
 
-/* ===== التوافق مع الموبايل ===== */
-
-/* أجهزة لوحية */
-@media (max-width: 992px) {
-    .admin-sidebar {
-        width: 200px;
-        min-width: 200px;
-    }
-    
-    .admin-content {
-        max-width: calc(100% - 200px);
-        padding: 16px;
-    }
-    
-    .admin-nav-item {
-        padding: 8px 12px;
-        font-size: 13px;
-        min-height: 40px;
-    }
-    
-    .admin-nav-item i {
-        font-size: 14px;
-        width: 20px;
-    }
+/* ===== حالة السحوبات ===== */
+.status-pending {
+    color: var(--warning);
+}
+.status-approved {
+    color: var(--success);
+}
+.status-rejected {
+    color: var(--danger);
+}
+.status-processed {
+    color: var(--secondary);
 }
 
-/* موبايل */
+/* ===== Responsive ===== */
 @media (max-width: 768px) {
     .admin-sidebar {
         width: 100%;
@@ -412,13 +453,13 @@
         position: relative;
         top: 0;
         height: auto;
-        max-height: 40vh;
+        max-height: 50vh;
         border-right: none;
         border-bottom: 1px solid var(--border-color);
         padding: 8px 0;
         flex-shrink: 0;
     }
-    
+
     .admin-sidebar-nav {
         flex-direction: row;
         flex-wrap: wrap;
@@ -426,120 +467,114 @@
         padding: 0 8px;
         justify-content: flex-start;
     }
-    
+
     .admin-nav-item {
         flex: 0 1 auto;
         min-width: 50px;
-        padding: 6px 10px;
+        padding: 8px 12px;
         font-size: 12px;
         border-radius: 8px;
         border-right: none !important;
         white-space: nowrap;
     }
-    
+
     .admin-nav-item.active {
         background: rgba(108, 60, 225, 0.2);
         border-right: none !important;
-        border-bottom: 2px solid var(--primary);
+        border-bottom: 2px solid var(--accent);
         border-radius: 8px 8px 0 0;
     }
-    
+
     .admin-nav-item span {
         display: none;
     }
-    
+
     .admin-nav-item i {
         font-size: 16px;
         width: auto;
     }
-    
+
     .admin-nav-item .badge {
         font-size: 8px;
         padding: 1px 5px;
     }
-    
+
     .admin-content {
         max-width: 100%;
-        padding: 12px;
+        padding: 16px;
+        margin-left: 0;
     }
-    
+
     .admin-body {
         flex-direction: column;
     }
-    
+
     .admin-navbar {
         padding: 8px 12px;
     }
-    
+
     .admin-nav-brand h3 {
         font-size: 16px;
     }
-    
+
     .admin-date {
         display: none;
     }
-    
+
     .admin-stats-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 10px;
     }
-    
+
     .admin-form .form-row {
         grid-template-columns: 1fr;
     }
-    
+
     .admin-table-wrapper .table-header {
         flex-direction: column;
         align-items: stretch;
         gap: 8px;
     }
-    
-    .admin-table-wrapper table th,
-    .admin-table-wrapper table td {
-        padding: 8px 10px;
-        font-size: 12px;
-    }
-    
+
     .admin-login-box {
         padding: 24px 16px;
     }
+
+    .admin-nav-actions {
+        gap: 8px;
+    }
 }
 
-/* موبايل صغير */
 @media (max-width: 480px) {
     .admin-stats-grid {
         grid-template-columns: 1fr 1fr;
         gap: 8px;
     }
-    
+
     .admin-stat-card {
         padding: 12px 14px;
     }
-    
+
     .admin-stat-card .stat-number {
         font-size: 18px;
     }
-    
-    .admin-stat-card .stat-label {
-        font-size: 11px;
-    }
-    
+
     .admin-content {
         padding: 8px;
     }
-    
+
     .admin-nav-item {
         min-width: 40px;
         padding: 4px 8px;
         font-size: 11px;
     }
-    
+
     .admin-nav-item i {
         font-size: 14px;
     }
 }
 
-/* ===== أنيميشن ===== */
+/* ===== Animations ===== */
 @keyframes fadeInUp {
     from {
         opacity: 0;
