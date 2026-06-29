@@ -322,6 +322,27 @@ function loadSectionContent(section) {
             break;
         case 'prices':
             content.innerHTML = getPricesHTML();
+            setTimeout(loadPrices, 300);
+            break;
+        case 'notifications':
+            content.innerHTML = getNotificationsHTML();
+            setTimeout(loadNotificationsTable, 300);
+            break;
+        case 'smartlinks':
+            content.innerHTML = getSmartLinksHTML();
+            setTimeout(loadSmartLinksTable, 300);
+            break;
+        case 'languages':
+            content.innerHTML = getLanguagesHTML();
+            setTimeout(loadLanguagesTable, 300);
+            break;
+        case 'advertisers':
+            content.innerHTML = getAdvertisersHTML();
+            setTimeout(loadAdvertisersTable, 300);
+            break;
+        case 'campaigns':
+            content.innerHTML = getCampaignsHTML();
+            setTimeout(loadCampaignsTable, 300);
             break;
         case 'offers':
             content.innerHTML = getOffersHTML();
@@ -331,21 +352,6 @@ function loadSectionContent(section) {
             break;
         case 'faucets':
             content.innerHTML = getFaucetsHTML();
-            break;
-        case 'smartlinks':
-            content.innerHTML = getSmartlinksHTML();
-            break;
-        case 'advertisers':
-            content.innerHTML = getAdvertisersHTML();
-            break;
-        case 'campaigns':
-            content.innerHTML = getCampaignsHTML();
-            break;
-        case 'languages':
-            content.innerHTML = getLanguagesHTML();
-            break;
-        case 'notifications':
-            content.innerHTML = getNotificationsHTML();
             break;
         case 'ai':
             content.innerHTML = getAIHTML();
@@ -377,7 +383,7 @@ function loadSectionContent(section) {
 }
 
 // ==========================================================
-// ===== دوال الأقسام الرئيسية =====
+// ===== دوال لوحة التحكم =====
 // ==========================================================
 
 function getDashboardHTML() {
@@ -461,8 +467,8 @@ function getDashboardHTML() {
                 <button class="btn btn-warning btn-sm" onclick="loadSection('tasks')">
                     <i class="fas fa-tasks"></i> إدارة المهام
                 </button>
-                <button class="btn btn-info btn-sm" onclick="loadSection('prices')">
-                    <i class="fas fa-dollar-sign"></i> تعديل الأسعار
+                <button class="btn btn-info btn-sm" onclick="loadSection('notifications')">
+                    <i class="fas fa-bell"></i> الإشعارات
                 </button>
                 <button class="btn btn-danger btn-sm" onclick="if(confirm('هل أنت متأكد؟')) alert('تم عمل نسخة احتياطية')">
                     <i class="fas fa-database"></i> نسخ احتياطي
@@ -473,7 +479,164 @@ function getDashboardHTML() {
 }
 
 // ==========================================================
-// ===== دوال المهام (Tasks) =====
+// ===== دوال المستخدمين =====
+// ==========================================================
+
+function getUsersHTML() {
+    return `
+        <h2 class="section-title" style="text-align: right; font-size: 28px; margin-bottom: 24px;">
+            <i class="fas fa-users"></i> إدارة المستخدمين
+        </h2>
+        <div class="admin-table-wrapper">
+            <div class="table-header">
+                <h4>👥 قائمة المستخدمين</h4>
+                <div style="display: flex; gap: 12px;">
+                    <input type="text" class="form-control" placeholder="🔍 بحث..." style="width: 200px;" />
+                    <button class="btn btn-primary btn-sm"><i class="fas fa-user-plus"></i> إضافة</button>
+                </div>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>المستخدم</th>
+                            <th>البريد الإلكتروني</th>
+                            <th>الرصيد</th>
+                            <th>الحالة</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        <tr><td colspan="6" style="text-align: center; color: var(--text-secondary);">جاري التحميل...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    `;
+}
+
+async function loadUsersTable() {
+    try {
+        const { data: users, error } = await supabaseClient
+            .from('users')
+            .select('id, username, email, balance, is_active, created_at')
+            .order('created_at', { ascending: false })
+            .limit(20);
+
+        if (error) throw error;
+
+        const tbody = document.getElementById('usersTableBody');
+        if (!tbody) return;
+
+        if (users.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-secondary);">لا يوجد مستخدمين</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = users.map((user, index) => `
+            <tr>
+                <td>${index + 1}</td>
+                <td>${user.username || 'مستخدم'}</td>
+                <td>${user.email}</td>
+                <td>$${parseFloat(user.balance || 0).toFixed(2)}</td>
+                <td><span class="badge ${user.is_active ? 'badge-success' : 'badge-danger'}">${user.is_active ? '✅ نشط' : '❌ موقوف'}</span></td>
+                <td>
+                    <button class="btn btn-info btn-sm"><i class="fas fa-edit"></i></button>
+                    <button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                </td>
+            </tr>
+        `).join('');
+
+    } catch (error) {
+        console.error('❌ خطأ في تحميل المستخدمين:', error);
+    }
+}
+
+// ==========================================================
+// ===== دوال السحوبات =====
+// ==========================================================
+
+function getWithdrawalsHTML() {
+    return `
+        <h2 class="section-title" style="text-align: right; font-size: 28px; margin-bottom: 24px;">
+            <i class="fas fa-money-bill-wave"></i> إدارة السحوبات
+        </h2>
+        <div class="admin-table-wrapper">
+            <div class="table-header">
+                <h4>💸 طلبات السحب</h4>
+                <div>
+                    <span class="badge badge-warning">0 معلق</span>
+                    <span class="badge badge-success">0 مكتمل</span>
+                    <span class="badge badge-danger">0 مرفوض</span>
+                </div>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>المستخدم</th>
+                            <th>المبلغ</th>
+                            <th>الطريقة</th>
+                            <th>التاريخ</th>
+                            <th>الحالة</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="withdrawalsTableBody">
+                        <tr><td colspan="6" style="text-align: center; color: var(--text-secondary);">جاري التحميل...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    `;
+}
+
+async function loadWithdrawalsTable() {
+    try {
+        const { data: withdrawals, error } = await supabaseClient
+            .from('withdrawals')
+            .select('*, users(username)')
+            .order('created_at', { ascending: false })
+            .limit(20);
+
+        if (error) throw error;
+
+        const tbody = document.getElementById('withdrawalsTableBody');
+        if (!tbody) return;
+
+        if (withdrawals.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-secondary);">لا توجد سحوبات</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = withdrawals.map(w => `
+            <tr>
+                <td>${w.users?.username || 'مستخدم'}</td>
+                <td>$${parseFloat(w.amount || 0).toFixed(2)}</td>
+                <td>${w.method || 'غير محدد'}</td>
+                <td>${new Date(w.created_at).toLocaleDateString('ar-EG')}</td>
+                <td><span class="badge ${w.status === 'pending' ? 'badge-warning' : w.status === 'approved' ? 'badge-success' : 'badge-danger'}">
+                    ${w.status === 'pending' ? '⏳ معلق' : w.status === 'approved' ? '✅ مقبول' : '❌ مرفوض'}
+                </span></td>
+                <td>
+                    ${w.status === 'pending' ? `
+                        <button class="btn btn-success btn-sm"><i class="fas fa-check"></i></button>
+                        <button class="btn btn-danger btn-sm"><i class="fas fa-times"></i></button>
+                    ` : `
+                        <button class="btn btn-info btn-sm"><i class="fas fa-eye"></i></button>
+                    `}
+                </td>
+            </tr>
+        `).join('');
+
+    } catch (error) {
+        console.error('❌ خطأ في تحميل السحوبات:', error);
+    }
+}
+
+// ==========================================================
+// ===== دوال المهام =====
 // ==========================================================
 
 function getTasksHTML() {
@@ -1118,7 +1281,6 @@ async function loadGamesTable() {
             'other': '📦 أخرى'
         };
 
-        // تحديث عدد الألعاب في لوحة التحكم
         const statsGames = document.getElementById('statsGames');
         if (statsGames) statsGames.textContent = games.length;
 
@@ -1252,7 +1414,6 @@ function getVouchersHTML() {
 
 // ===== دوال القسائم =====
 
-// تحميل الجوائز في الـ select
 async function loadPrizesForVouchers() {
     try {
         const { data: prizes, error } = await supabaseClient
@@ -1266,7 +1427,6 @@ async function loadPrizesForVouchers() {
         const select = document.getElementById('voucherPrize');
         if (!select) return;
 
-        // الاحتفاظ بالخيار الأول
         select.innerHTML = '<option value="">اختر جائزة...</option>';
 
         if (prizes && prizes.length > 0) {
@@ -1314,7 +1474,6 @@ window.addNewVouchers = async function(e) {
         return;
     }
 
-    // تقسيم الأكواد
     const codes = codesText.split('\n')
         .map(code => code.trim())
         .filter(code => code.length > 0);
@@ -1326,7 +1485,6 @@ window.addNewVouchers = async function(e) {
         return;
     }
 
-    // تحضير البيانات للإدراج
     const vouchers = codes.map(code => ({
         prize_id: prizeId,
         code: code,
@@ -1433,6 +1591,285 @@ window.deleteVoucher = async function(voucherId) {
 };
 
 // ==========================================================
+// ===== دوال الإشعارات =====
+// ==========================================================
+
+function getNotificationsHTML() {
+    return `
+        <h2 class="section-title" style="text-align: right; font-size: 28px; margin-bottom: 24px;">
+            <i class="fas fa-bell"></i> إدارة الإشعارات
+        </h2>
+
+        <div class="admin-form">
+            <h4>📢 إرسال إشعار جديد</h4>
+            <form id="addNotificationForm" onsubmit="sendNotificationToUsers(event)">
+                <div class="form-row">
+                    <div class="form-group full-width">
+                        <label>📌 عنوان الإشعار</label>
+                        <input type="text" id="notifTitle" class="form-control" placeholder="مثال: تحديث جديد في المنصة" required />
+                    </div>
+                    <div class="form-group full-width">
+                        <label>📝 رسالة الإشعار</label>
+                        <textarea id="notifMessage" class="form-control" rows="3" placeholder="نص الإشعار" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>🎯 المستهدفين</label>
+                        <select id="notifTarget" class="form-control">
+                            <option value="all">جميع المستخدمين</option>
+                            <option value="active">المستخدمين النشطين فقط</option>
+                            <option value="specific">مستخدم معين</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="notifSpecificUserGroup" style="display: none;">
+                        <label>👤 اسم المستخدم</label>
+                        <input type="text" id="notifSpecificUser" class="form-control" placeholder="أدخل اسم المستخدم" />
+                    </div>
+                    <div class="form-group">
+                        <label>📂 نوع الإشعار</label>
+                        <select id="notifType" class="form-control">
+                            <option value="system">⚙️ نظام</option>
+                            <option value="promotion">🎯 ترويجي</option>
+                            <option value="update">🔄 تحديث</option>
+                            <option value="warning">⚠️ تنبيه</option>
+                        </select>
+                    </div>
+                    <div class="form-group full-width">
+                        <label>🔗 رابط (اختياري)</label>
+                        <input type="url" id="notifLink" class="form-control" placeholder="https://example.com" />
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i> إرسال الإشعار
+                    </button>
+                    <button type="reset" class="btn btn-secondary">إلغاء</button>
+                </div>
+                <div id="notifResponse" style="display: none; margin-top: 12px;"></div>
+            </form>
+        </div>
+
+        <div class="admin-table-wrapper" style="margin-top: 20px;">
+            <div class="table-header">
+                <h4>📋 سجل الإشعارات المرسلة</h4>
+                <button class="btn btn-success btn-sm" onclick="refreshNotifications()">
+                    <i class="fas fa-sync"></i> تحديث
+                </button>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>العنوان</th>
+                            <th>النوع</th>
+                            <th>الحالة</th>
+                            <th>التاريخ</th>
+                            <th>الحالة</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="notificationsTableBody">
+                        <tr><td colspan="7" style="text-align: center; color: var(--text-secondary);">جاري التحميل...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    `;
+}
+
+// ===== دوال الإشعارات =====
+
+document.addEventListener('DOMContentLoaded', function() {
+    const targetSelect = document.getElementById('notifTarget');
+    if (targetSelect) {
+        targetSelect.addEventListener('change', function() {
+            const specificGroup = document.getElementById('notifSpecificUserGroup');
+            if (specificGroup) {
+                specificGroup.style.display = this.value === 'specific' ? 'block' : 'none';
+            }
+        });
+    }
+});
+
+window.sendNotificationToUsers = async function(e) {
+    e.preventDefault();
+
+    const title = document.getElementById('notifTitle').value.trim();
+    const message = document.getElementById('notifMessage').value.trim();
+    const target = document.getElementById('notifTarget').value;
+    const type = document.getElementById('notifType').value;
+    const link = document.getElementById('notifLink').value.trim();
+    const specificUser = document.getElementById('notifSpecificUser').value.trim();
+
+    const responseEl = document.getElementById('notifResponse');
+    responseEl.style.display = 'none';
+
+    if (!title || !message) {
+        responseEl.style.display = 'block';
+        responseEl.className = 'admin-response error';
+        responseEl.textContent = '⚠️ يرجى إدخال عنوان ورسالة الإشعار';
+        return;
+    }
+
+    let users = [];
+    let targetLabel = 'جميع المستخدمين';
+
+    try {
+        if (target === 'all') {
+            const { data, error } = await supabaseClient
+                .from('users')
+                .select('id');
+            if (error) throw error;
+            users = data.map(u => u.id);
+            targetLabel = 'جميع المستخدمين';
+        } else if (target === 'active') {
+            const { data, error } = await supabaseClient
+                .from('users')
+                .select('id')
+                .eq('is_active', true);
+            if (error) throw error;
+            users = data.map(u => u.id);
+            targetLabel = 'المستخدمين النشطين';
+        } else if (target === 'specific') {
+            if (!specificUser) {
+                responseEl.style.display = 'block';
+                responseEl.className = 'admin-response error';
+                responseEl.textContent = '⚠️ يرجى إدخال اسم المستخدم';
+                return;
+            }
+            const { data, error } = await supabaseClient
+                .from('users')
+                .select('id')
+                .ilike('username', specificUser);
+            if (error) throw error;
+            users = data.map(u => u.id);
+            targetLabel = `المستخدم: ${specificUser}`;
+        }
+
+        if (users.length === 0) {
+            responseEl.style.display = 'block';
+            responseEl.className = 'admin-response error';
+            responseEl.textContent = '❌ لا يوجد مستخدمين مستهدفين';
+            return;
+        }
+
+        const notifications = users.map(userId => ({
+            user_id: userId,
+            title: title,
+            message: message,
+            type: type,
+            link: link || null,
+            is_read: false
+        }));
+
+        const { data, error } = await supabaseClient
+            .from('notifications')
+            .insert(notifications)
+            .select();
+
+        if (error) throw error;
+
+        await addLog(adminUser?.id, 'notification', `إرسال إشعار "${title}" لـ ${users.length} مستخدم`, {
+            title: title,
+            target: targetLabel,
+            count: users.length
+        });
+
+        responseEl.style.display = 'block';
+        responseEl.className = 'admin-response success';
+        responseEl.textContent = `✅ تم إرسال الإشعار بنجاح لـ ${users.length} مستخدم!`;
+
+        document.getElementById('addNotificationForm').reset();
+        document.getElementById('notifSpecificUserGroup').style.display = 'none';
+        loadNotificationsTable();
+
+        setTimeout(() => {
+            responseEl.style.display = 'none';
+        }, 5000);
+
+    } catch (error) {
+        responseEl.style.display = 'block';
+        responseEl.className = 'admin-response error';
+        responseEl.textContent = '❌ ' + error.message;
+    }
+};
+
+async function loadNotificationsTable() {
+    try {
+        const { data: notifications, error } = await supabaseClient
+            .from('notifications')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(50);
+
+        if (error) throw error;
+
+        const tbody = document.getElementById('notificationsTableBody');
+        if (!tbody) return;
+
+        if (!notifications || notifications.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-secondary);">لا توجد إشعارات</td></tr>';
+            return;
+        }
+
+        const typeNames = {
+            'system': '⚙️ نظام',
+            'promotion': '🎯 ترويجي',
+            'update': '🔄 تحديث',
+            'warning': '⚠️ تنبيه'
+        };
+
+        tbody.innerHTML = notifications.map((notif, index) => `
+            <tr>
+                <td>${index + 1}</td>
+                <td>${notif.title}</td>
+                <td>${typeNames[notif.type] || notif.type}</td>
+                <td>${notif.is_read ? '✅ مقروء' : '🔴 غير مقروء'}</td>
+                <td style="font-size: 12px; color: var(--text-muted);">${new Date(notif.created_at).toLocaleDateString('ar-EG')}</td>
+                <td>
+                    <span class="badge badge-success">✅ مرسل</span>
+                </td>
+                <td>
+                    <button class="btn btn-danger btn-sm" onclick="deleteNotification('${notif.id}')">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+
+    } catch (error) {
+        console.error('❌ خطأ في تحميل الإشعارات:', error);
+        const tbody = document.getElementById('notificationsTableBody');
+        if (tbody) {
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--danger);">❌ خطأ في تحميل الإشعارات</td></tr>';
+        }
+    }
+}
+
+window.refreshNotifications = function() {
+    loadNotificationsTable();
+};
+
+window.deleteNotification = async function(notifId) {
+    if (!confirm('⚠️ هل أنت متأكد من حذف هذا الإشعار؟')) return;
+
+    try {
+        const { error } = await supabaseClient
+            .from('notifications')
+            .delete()
+            .eq('id', notifId);
+
+        if (error) throw error;
+
+        alert('✅ تم حذف الإشعار بنجاح!');
+        loadNotificationsTable();
+
+    } catch (error) {
+        alert('❌ خطأ: ' + error.message);
+    }
+};
+
+// ==========================================================
 // ===== دوال الأسعار =====
 // ==========================================================
 
@@ -1519,7 +1956,6 @@ async function loadPrices() {
             prices[s.setting_key] = s.setting_value;
         });
 
-        // تعبئة الحقول
         const mappings = {
             'video_15s_reward': 'price_video_15s',
             'video_30s_reward': 'price_video_30s',
@@ -1585,7 +2021,6 @@ window.updatePrices = async function(e) {
     }
 
     try {
-        // تحديث كل سعر على حدة
         for (const update of updates) {
             const { error } = await supabaseClient
                 .from('settings')
@@ -1611,36 +2046,80 @@ window.updatePrices = async function(e) {
 };
 
 // ==========================================================
-// ===== دوال المستخدمين والسحوبات =====
+// ===== دوال Smart Links =====
 // ==========================================================
 
-function getUsersHTML() {
+function getSmartLinksHTML() {
     return `
         <h2 class="section-title" style="text-align: right; font-size: 28px; margin-bottom: 24px;">
-            <i class="fas fa-users"></i> إدارة المستخدمين
+            <i class="fas fa-link"></i> إدارة Smart Links
         </h2>
-        <div class="admin-table-wrapper">
-            <div class="table-header">
-                <h4>👥 قائمة المستخدمين</h4>
-                <div style="display: flex; gap: 12px;">
-                    <input type="text" class="form-control" placeholder="🔍 بحث..." style="width: 200px;" />
-                    <button class="btn btn-primary btn-sm"><i class="fas fa-user-plus"></i> إضافة</button>
+
+        <div class="admin-form">
+            <h4>🔗 إضافة Smart Link جديد</h4>
+            <form id="addSmartLinkForm" onsubmit="addNewSmartLink(event)">
+                <div class="form-row">
+                    <div class="form-group full-width">
+                        <label>📌 عنوان الرابط</label>
+                        <input type="text" id="smartLinkTitle" class="form-control" placeholder="مثال: عرض حصري" required />
+                    </div>
+                    <div class="form-group full-width">
+                        <label>🔗 رابط الوجهة</label>
+                        <input type="url" id="smartLinkUrl" class="form-control" placeholder="https://example.com" required />
+                    </div>
+                    <div class="form-group">
+                        <label>💰 المكافأة ($)</label>
+                        <input type="number" id="smartLinkReward" class="form-control" placeholder="مثال: 0.005" step="0.001" required />
+                    </div>
+                    <div class="form-group">
+                        <label>📊 الحد الأقصى للنقرات</label>
+                        <input type="number" id="smartLinkMax" class="form-control" placeholder="مثال: 1000" value="0" />
+                    </div>
+                    <div class="form-group full-width">
+                        <label>📝 وصف الرابط</label>
+                        <textarea id="smartLinkDescription" class="form-control" rows="2" placeholder="وصف الرابط"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>✅ الحالة</label>
+                        <select id="smartLinkStatus" class="form-control">
+                            <option value="true">🟢 نشط</option>
+                            <option value="false">🔴 غير نشط</option>
+                        </select>
+                    </div>
                 </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> حفظ الرابط
+                    </button>
+                    <button type="reset" class="btn btn-secondary">إلغاء</button>
+                </div>
+                <div id="smartLinkResponse" style="display: none; margin-top: 12px;"></div>
+            </form>
+        </div>
+
+        <div class="admin-table-wrapper" style="margin-top: 20px;">
+            <div class="table-header">
+                <h4>🔗 قائمة Smart Links</h4>
+                <button class="btn btn-success btn-sm" onclick="refreshSmartLinks()">
+                    <i class="fas fa-sync"></i> تحديث
+                </button>
             </div>
             <div class="table-container">
                 <table>
                     <thead>
                         <tr>
                             <th>#</th>
-                            <th>المستخدم</th>
-                            <th>البريد الإلكتروني</th>
-                            <th>الرصيد</th>
+                            <th>العنوان</th>
+                            <th>الرابط</th>
+                            <th>المكافأة</th>
+                            <th>النقرات</th>
+                            <th>الحد</th>
                             <th>الحالة</th>
                             <th>الإجراءات</th>
                         </tr>
                     </thead>
-                    <tbody id="usersTableBody">
-                        <tr><td colspan="6" style="text-align: center; color: var(--text-secondary);">جاري التحميل...</td></tr>
+                    <tbody id="smartLinksTableBody">
+                        <tr><td colspan="8" style="text-align: center; color: var(--text-secondary);">جاري التحميل...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -1648,33 +2127,203 @@ function getUsersHTML() {
     `;
 }
 
-function getWithdrawalsHTML() {
+// ===== دوال Smart Links =====
+
+window.addNewSmartLink = async function(e) {
+    e.preventDefault();
+
+    const title = document.getElementById('smartLinkTitle').value.trim();
+    const url = document.getElementById('smartLinkUrl').value.trim();
+    const reward = parseFloat(document.getElementById('smartLinkReward').value);
+    const maxRedirects = parseInt(document.getElementById('smartLinkMax').value) || 0;
+    const description = document.getElementById('smartLinkDescription').value.trim();
+    const isActive = document.getElementById('smartLinkStatus').value === 'true';
+
+    const responseEl = document.getElementById('smartLinkResponse');
+    responseEl.style.display = 'none';
+
+    if (!title || !url || !reward || reward <= 0) {
+        responseEl.style.display = 'block';
+        responseEl.className = 'admin-response error';
+        responseEl.textContent = '⚠️ يرجى إدخال عنوان ورابط ومكافأة صحيحة';
+        return;
+    }
+
+    try {
+        const { data, error } = await supabaseClient
+            .from('smart_links')
+            .insert([{
+                title: title,
+                link_url: url,
+                reward: reward,
+                max_redirects: maxRedirects || 0,
+                description: description || null,
+                is_active: isActive
+            }])
+            .select()
+            .single();
+
+        if (error) throw error;
+
+        responseEl.style.display = 'block';
+        responseEl.className = 'admin-response success';
+        responseEl.textContent = `✅ تم إضافة Smart Link "${title}" بنجاح!`;
+
+        document.getElementById('addSmartLinkForm').reset();
+        loadSmartLinksTable();
+
+        setTimeout(() => {
+            responseEl.style.display = 'none';
+        }, 5000);
+
+    } catch (error) {
+        responseEl.style.display = 'block';
+        responseEl.className = 'admin-response error';
+        responseEl.textContent = '❌ ' + error.message;
+    }
+};
+
+async function loadSmartLinksTable() {
+    try {
+        const { data: links, error } = await supabaseClient
+            .from('smart_links')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        const tbody = document.getElementById('smartLinksTableBody');
+        if (!tbody) return;
+
+        if (!links || links.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-secondary);">لا توجد روابط ذكية</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = links.map((link, index) => `
+            <tr>
+                <td>${index + 1}</td>
+                <td>${link.title}</td>
+                <td><a href="${link.link_url}" target="_blank" style="color: var(--secondary); font-size: 12px;">${link.link_url.substring(0, 30)}...</a></td>
+                <td style="color: var(--secondary); font-weight: 700;">$${parseFloat(link.reward).toFixed(3)}</td>
+                <td>${link.redirect_count || 0}</td>
+                <td>${link.max_redirects || '∞'}</td>
+                <td>
+                    <span class="badge ${link.is_active ? 'badge-success' : 'badge-danger'}">
+                        ${link.is_active ? '✅ نشط' : '❌ غير نشط'}
+                    </span>
+                </td>
+                <td>
+                    <button class="btn btn-info btn-sm" onclick="editSmartLink('${link.id}')">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteSmartLink('${link.id}')">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+
+    } catch (error) {
+        console.error('❌ خطأ في تحميل Smart Links:', error);
+        const tbody = document.getElementById('smartLinksTableBody');
+        if (tbody) {
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--danger);">❌ خطأ في تحميل Smart Links</td></tr>';
+        }
+    }
+}
+
+window.refreshSmartLinks = function() {
+    loadSmartLinksTable();
+};
+
+window.deleteSmartLink = async function(linkId) {
+    if (!confirm('⚠️ هل أنت متأكد من حذف هذا الرابط؟')) return;
+
+    try {
+        const { error } = await supabaseClient
+            .from('smart_links')
+            .delete()
+            .eq('id', linkId);
+
+        if (error) throw error;
+
+        alert('✅ تم حذف الرابط بنجاح!');
+        loadSmartLinksTable();
+
+    } catch (error) {
+        alert('❌ خطأ: ' + error.message);
+    }
+};
+
+window.editSmartLink = function(linkId) {
+    alert('🔧 سيتم إضافة ميزة التعديل قريباً');
+};
+
+// ==========================================================
+// ===== دوال اللغات =====
+// ==========================================================
+
+function getLanguagesHTML() {
     return `
         <h2 class="section-title" style="text-align: right; font-size: 28px; margin-bottom: 24px;">
-            <i class="fas fa-money-bill-wave"></i> إدارة السحوبات
+            <i class="fas fa-language"></i> إدارة اللغات
         </h2>
-        <div class="admin-table-wrapper">
-            <div class="table-header">
-                <h4>💸 طلبات السحب</h4>
-                <div>
-                    <span class="badge badge-warning">0 معلق</span>
-                    <span class="badge badge-success">0 مكتمل</span>
-                    <span class="badge badge-danger">0 مرفوض</span>
+
+        <div class="admin-form">
+            <h4>🌍 إضافة لغة جديدة</h4>
+            <form id="addLanguageForm" onsubmit="addNewLanguage(event)">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>📝 اسم اللغة</label>
+                        <input type="text" id="langName" class="form-control" placeholder="مثال: English" required />
+                    </div>
+                    <div class="form-group">
+                        <label>🔤 رمز اللغة</label>
+                        <input type="text" id="langCode" class="form-control" placeholder="مثال: en" required />
+                    </div>
+                    <div class="form-group">
+                        <label>✅ اللغة الافتراضية</label>
+                        <select id="langDefault" class="form-control">
+                            <option value="false">لا</option>
+                            <option value="true">نعم</option>
+                        </select>
+                    </div>
+                    <div class="form-group full-width">
+                        <label>📋 ملف الترجمة (JSON)</label>
+                        <textarea id="langTranslations" class="form-control" rows="5" placeholder='{"welcome": "Welcome to RewardHub", "earn": "Earn Money"}'></textarea>
+                    </div>
                 </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> حفظ اللغة
+                    </button>
+                    <button type="reset" class="btn btn-secondary">إلغاء</button>
+                </div>
+                <div id="langResponse" style="display: none; margin-top: 12px;"></div>
+            </form>
+        </div>
+
+        <div class="admin-table-wrapper" style="margin-top: 20px;">
+            <div class="table-header">
+                <h4>🌍 اللغات المدعومة</h4>
+                <button class="btn btn-success btn-sm" onclick="refreshLanguages()">
+                    <i class="fas fa-sync"></i> تحديث
+                </button>
             </div>
             <div class="table-container">
                 <table>
                     <thead>
                         <tr>
-                            <th>المستخدم</th>
-                            <th>المبلغ</th>
-                            <th>الطريقة</th>
-                            <th>التاريخ</th>
+                            <th>#</th>
+                            <th>اللغة</th>
+                            <th>الرمز</th>
+                            <th>الافتراضية</th>
                             <th>الحالة</th>
                             <th>الإجراءات</th>
                         </tr>
                     </thead>
-                    <tbody id="withdrawalsTableBody">
+                    <tbody id="languagesTableBody">
                         <tr><td colspan="6" style="text-align: center; color: var(--text-secondary);">جاري التحميل...</td></tr>
                     </tbody>
                 </table>
@@ -1683,33 +2332,238 @@ function getWithdrawalsHTML() {
     `;
 }
 
-// ===== دوال التحميل =====
+// ===== دوال اللغات =====
 
-async function loadUsersTable() {
+window.addNewLanguage = async function(e) {
+    e.preventDefault();
+
+    const name = document.getElementById('langName').value.trim();
+    const code = document.getElementById('langCode').value.trim();
+    const isDefault = document.getElementById('langDefault').value === 'true';
+    let translations = document.getElementById('langTranslations').value.trim();
+
+    const responseEl = document.getElementById('langResponse');
+    responseEl.style.display = 'none';
+
+    if (!name || !code) {
+        responseEl.style.display = 'block';
+        responseEl.className = 'admin-response error';
+        responseEl.textContent = '⚠️ يرجى إدخال اسم اللغة ورمزها';
+        return;
+    }
+
+    // محاولة تحويل الـ JSON
+    let translationsObj = {};
+    if (translations) {
+        try {
+            translationsObj = JSON.parse(translations);
+        } catch (e) {
+            responseEl.style.display = 'block';
+            responseEl.className = 'admin-response error';
+            responseEl.textContent = '⚠️ ملف الترجمة غير صحيح (JSON غير صالح)';
+            return;
+        }
+    }
+
     try {
-        const { data: users, error } = await supabaseClient
-            .from('users')
-            .select('id, username, email, balance, is_active, created_at')
-            .order('created_at', { ascending: false })
-            .limit(20);
+        // إذا كانت اللغة افتراضية، نغير اللغات الأخرى
+        if (isDefault) {
+            await supabaseClient
+                .from('languages')
+                .update({ is_default: false })
+                .eq('is_default', true);
+        }
+
+        const { data, error } = await supabaseClient
+            .from('languages')
+            .insert([{
+                name: name,
+                code: code,
+                is_default: isDefault,
+                is_active: true,
+                translations: translationsObj
+            }])
+            .select()
+            .single();
 
         if (error) throw error;
 
-        const tbody = document.getElementById('usersTableBody');
+        responseEl.style.display = 'block';
+        responseEl.className = 'admin-response success';
+        responseEl.textContent = `✅ تم إضافة اللغة "${name}" بنجاح!`;
+
+        document.getElementById('addLanguageForm').reset();
+        loadLanguagesTable();
+
+        setTimeout(() => {
+            responseEl.style.display = 'none';
+        }, 5000);
+
+    } catch (error) {
+        responseEl.style.display = 'block';
+        responseEl.className = 'admin-response error';
+        responseEl.textContent = '❌ ' + error.message;
+    }
+};
+
+async function loadLanguagesTable() {
+    try {
+        const { data: languages, error } = await supabaseClient
+            .from('languages')
+            .select('*')
+            .order('is_default', { ascending: false });
+
+        if (error) throw error;
+
+        const tbody = document.getElementById('languagesTableBody');
         if (!tbody) return;
 
-        if (users.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-secondary);">لا يوجد مستخدمين</td></tr>';
+        if (!languages || languages.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-secondary);">لا توجد لغات</td></tr>';
             return;
         }
 
-        tbody.innerHTML = users.map((user, index) => `
+        tbody.innerHTML = languages.map((lang, index) => `
             <tr>
                 <td>${index + 1}</td>
-                <td>${user.username || 'مستخدم'}</td>
-                <td>${user.email}</td>
-                <td>$${parseFloat(user.balance || 0).toFixed(2)}</td>
-                <td><span class="badge ${user.is_active ? 'badge-success' : 'badge-danger'}">${user.is_active ? '✅ نشط' : '❌ موقوف'}</span></td>
+                <td>${lang.name}</td>
+                <td><code style="background: var(--dark-input); padding: 2px 8px; border-radius: 4px;">${lang.code}</code></td>
+                <td>${lang.is_default ? '⭐ نعم' : 'لا'}</td>
+                <td>
+                    <span class="badge ${lang.is_active ? 'badge-success' : 'badge-danger'}">
+                        ${lang.is_active ? '✅ نشطة' : '❌ غير نشطة'}
+                    </span>
+                </td>
+                <td>
+                    <button class="btn btn-info btn-sm" onclick="editLanguage('${lang.id}')">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteLanguage('${lang.id}')">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+
+    } catch (error) {
+        console.error('❌ خطأ في تحميل اللغات:', error);
+        const tbody = document.getElementById('languagesTableBody');
+        if (tbody) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--danger);">❌ خطأ في تحميل اللغات</td></tr>';
+        }
+    }
+}
+
+window.refreshLanguages = function() {
+    loadLanguagesTable();
+};
+
+window.deleteLanguage = async function(langId) {
+    if (!confirm('⚠️ هل أنت متأكد من حذف هذه اللغة؟')) return;
+
+    try {
+        const { error } = await supabaseClient
+            .from('languages')
+            .delete()
+            .eq('id', langId);
+
+        if (error) throw error;
+
+        alert('✅ تم حذف اللغة بنجاح!');
+        loadLanguagesTable();
+
+    } catch (error) {
+        alert('❌ خطأ: ' + error.message);
+    }
+};
+
+window.editLanguage = function(langId) {
+    alert('🔧 سيتم إضافة ميزة التعديل قريباً');
+};
+
+// ==========================================================
+// ===== دوال المعلنون =====
+// ==========================================================
+
+function getAdvertisersHTML() {
+    return `
+        <h2 class="section-title" style="text-align: right; font-size: 28px; margin-bottom: 24px;">
+            <i class="fas fa-bullhorn"></i> إدارة المعلنين
+        </h2>
+
+        <div class="admin-table-wrapper">
+            <div class="table-header">
+                <h4>📢 قائمة المعلنين</h4>
+                <button class="btn btn-primary btn-sm" onclick="alert('سيتم إضافة ميزة إضافة معلن قريباً')">
+                    <i class="fas fa-user-plus"></i> إضافة معلن
+                </button>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>المعلن</th>
+                            <th>البريد الإلكتروني</th>
+                            <th>عدد الحملات</th>
+                            <th>الميزانية</th>
+                            <th>الحالة</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="advertisersTableBody">
+                        <tr><td colspan="7" style="text-align: center; color: var(--text-secondary);">جاري التحميل...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    `;
+}
+
+// ===== دوال المعلنون =====
+
+async function loadAdvertisersTable() {
+    try {
+        const { data: advertisers, error } = await supabaseClient
+            .from('users')
+            .select('id, username, email, balance, is_active, created_at')
+            .eq('is_advertiser', true)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        const tbody = document.getElementById('advertisersTableBody');
+        if (!tbody) return;
+
+        if (!advertisers || advertisers.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-secondary);">لا يوجد معلنين</td></tr>';
+            return;
+        }
+
+        // جلب عدد الحملات لكل معلن
+        const campaignsCount = {};
+        for (const adv of advertisers) {
+            const { count, error: countError } = await supabaseClient
+                .from('campaigns')
+                .select('*', { count: 'exact', head: true })
+                .eq('advertiser_id', adv.id);
+            if (!countError) {
+                campaignsCount[adv.id] = count || 0;
+            }
+        }
+
+        tbody.innerHTML = advertisers.map((adv, index) => `
+            <tr>
+                <td>${index + 1}</td>
+                <td>${adv.username || 'معلن'}</td>
+                <td>${adv.email}</td>
+                <td>${campaignsCount[adv.id] || 0}</td>
+                <td>$${parseFloat(adv.balance || 0).toFixed(2)}</td>
+                <td>
+                    <span class="badge ${adv.is_active ? 'badge-success' : 'badge-danger'}">
+                        ${adv.is_active ? '✅ نشط' : '❌ موقوف'}
+                    </span>
+                </td>
                 <td>
                     <button class="btn btn-info btn-sm"><i class="fas fa-edit"></i></button>
                     <button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
@@ -1718,52 +2572,250 @@ async function loadUsersTable() {
         `).join('');
 
     } catch (error) {
-        console.error('❌ خطأ في تحميل المستخدمين:', error);
+        console.error('❌ خطأ في تحميل المعلنين:', error);
+        const tbody = document.getElementById('advertisersTableBody');
+        if (tbody) {
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--danger);">❌ خطأ في تحميل المعلنين</td></tr>';
+        }
     }
 }
 
-async function loadWithdrawalsTable() {
+// ==========================================================
+// ===== دوال الحملات =====
+// ==========================================================
+
+function getCampaignsHTML() {
+    return `
+        <h2 class="section-title" style="text-align: right; font-size: 28px; margin-bottom: 24px;">
+            <i class="fas fa-rocket"></i> إدارة الحملات الإعلانية
+        </h2>
+
+        <div class="admin-form">
+            <h4>🚀 إنشاء حملة جديدة</h4>
+            <form id="addCampaignForm" onsubmit="addNewCampaign(event)">
+                <div class="form-row">
+                    <div class="form-group full-width">
+                        <label>📌 عنوان الحملة</label>
+                        <input type="text" id="campaignTitle" class="form-control" placeholder="مثال: حملة التسويق الرقمي" required />
+                    </div>
+                    <div class="form-group">
+                        <label>📂 نوع المهمة</label>
+                        <select id="campaignTaskType" class="form-control">
+                            <option value="video">🎬 فيديو</option>
+                            <option value="visit">🌐 زيارة</option>
+                            <option value="survey">📊 استبيان</option>
+                            <option value="social">📱 اجتماعي</option>
+                            <option value="smartlink">🔗 Smart Link</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>💰 الميزانية ($)</label>
+                        <input type="number" id="campaignBudget" class="form-control" placeholder="مثال: 100" step="0.01" required />
+                    </div>
+                    <div class="form-group">
+                        <label>💵 المكافأة لكل مهمة ($)</label>
+                        <input type="number" id="campaignReward" class="form-control" placeholder="مثال: 0.10" step="0.01" required />
+                    </div>
+                    <div class="form-group">
+                        <label>📊 عدد المهام</label>
+                        <input type="number" id="campaignTasks" class="form-control" placeholder="مثال: 100" required />
+                    </div>
+                    <div class="form-group">
+                        <label>📅 تاريخ البدء</label>
+                        <input type="date" id="campaignStart" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label>📅 تاريخ الانتهاء</label>
+                        <input type="date" id="campaignEnd" class="form-control" />
+                    </div>
+                    <div class="form-group full-width">
+                        <label>🔗 رابط الحملة</label>
+                        <input type="url" id="campaignUrl" class="form-control" placeholder="https://example.com" />
+                    </div>
+                    <div class="form-group full-width">
+                        <label>📝 وصف الحملة</label>
+                        <textarea id="campaignDescription" class="form-control" rows="3" placeholder="وصف الحملة"></textarea>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> إنشاء الحملة
+                    </button>
+                    <button type="reset" class="btn btn-secondary">إلغاء</button>
+                </div>
+                <div id="campaignResponse" style="display: none; margin-top: 12px;"></div>
+            </form>
+        </div>
+
+        <div class="admin-table-wrapper" style="margin-top: 20px;">
+            <div class="table-header">
+                <h4>📊 الحملات النشطة</h4>
+                <button class="btn btn-success btn-sm" onclick="refreshCampaigns()">
+                    <i class="fas fa-sync"></i> تحديث
+                </button>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>العنوان</th>
+                            <th>المعلن</th>
+                            <th>الميزانية</th>
+                            <th>المصروف</th>
+                            <th>المهام</th>
+                            <th>الحالة</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="campaignsTableBody">
+                        <tr><td colspan="8" style="text-align: center; color: var(--text-secondary);">جاري التحميل...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    `;
+}
+
+// ===== دوال الحملات =====
+
+window.addNewCampaign = async function(e) {
+    e.preventDefault();
+
+    const title = document.getElementById('campaignTitle').value.trim();
+    const taskType = document.getElementById('campaignTaskType').value;
+    const budget = parseFloat(document.getElementById('campaignBudget').value);
+    const reward = parseFloat(document.getElementById('campaignReward').value);
+    const totalTasks = parseInt(document.getElementById('campaignTasks').value);
+    const startDate = document.getElementById('campaignStart').value;
+    const endDate = document.getElementById('campaignEnd').value;
+    const url = document.getElementById('campaignUrl').value.trim();
+    const description = document.getElementById('campaignDescription').value.trim();
+
+    const responseEl = document.getElementById('campaignResponse');
+    responseEl.style.display = 'none';
+
+    if (!title || !budget || !reward || !totalTasks) {
+        responseEl.style.display = 'block';
+        responseEl.className = 'admin-response error';
+        responseEl.textContent = '⚠️ يرجى ملء جميع الحقول المطلوبة';
+        return;
+    }
+
     try {
-        const { data: withdrawals, error } = await supabaseClient
-            .from('withdrawals')
-            .select('*, users(username)')
-            .order('created_at', { ascending: false })
-            .limit(20);
+        const { data, error } = await supabaseClient
+            .from('campaigns')
+            .insert([{
+                title: title,
+                task_type: taskType,
+                budget: budget,
+                reward_per_task: reward,
+                total_tasks: totalTasks,
+                start_date: startDate || null,
+                end_date: endDate || null,
+                target_url: url || null,
+                description: description || null,
+                status: 'active'
+            }])
+            .select()
+            .single();
 
         if (error) throw error;
 
-        const tbody = document.getElementById('withdrawalsTableBody');
+        responseEl.style.display = 'block';
+        responseEl.className = 'admin-response success';
+        responseEl.textContent = `✅ تم إنشاء الحملة "${title}" بنجاح!`;
+
+        document.getElementById('addCampaignForm').reset();
+        loadCampaignsTable();
+
+        setTimeout(() => {
+            responseEl.style.display = 'none';
+        }, 5000);
+
+    } catch (error) {
+        responseEl.style.display = 'block';
+        responseEl.className = 'admin-response error';
+        responseEl.textContent = '❌ ' + error.message;
+    }
+};
+
+async function loadCampaignsTable() {
+    try {
+        const { data: campaigns, error } = await supabaseClient
+            .from('campaigns')
+            .select('*, users(username)')
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        const tbody = document.getElementById('campaignsTableBody');
         if (!tbody) return;
 
-        if (withdrawals.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-secondary);">لا توجد سحوبات</td></tr>';
+        if (!campaigns || campaigns.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-secondary);">لا توجد حملات</td></tr>';
             return;
         }
 
-        tbody.innerHTML = withdrawals.map(w => `
+        tbody.innerHTML = campaigns.map((campaign, index) => `
             <tr>
-                <td>${w.users?.username || 'مستخدم'}</td>
-                <td>$${parseFloat(w.amount || 0).toFixed(2)}</td>
-                <td>${w.method || 'غير محدد'}</td>
-                <td>${new Date(w.created_at).toLocaleDateString('ar-EG')}</td>
-                <td><span class="badge ${w.status === 'pending' ? 'badge-warning' : w.status === 'approved' ? 'badge-success' : 'badge-danger'}">
-                    ${w.status === 'pending' ? '⏳ معلق' : w.status === 'approved' ? '✅ مقبول' : '❌ مرفوض'}
-                </span></td>
+                <td>${index + 1}</td>
+                <td>${campaign.title}</td>
+                <td>${campaign.users?.username || 'غير محدد'}</td>
+                <td>$${parseFloat(campaign.budget || 0).toFixed(2)}</td>
+                <td>$${parseFloat(campaign.spent || 0).toFixed(2)}</td>
+                <td>${campaign.completed_tasks || 0}/${campaign.total_tasks || 0}</td>
                 <td>
-                    ${w.status === 'pending' ? `
-                        <button class="btn btn-success btn-sm"><i class="fas fa-check"></i></button>
-                        <button class="btn btn-danger btn-sm"><i class="fas fa-times"></i></button>
-                    ` : `
-                        <button class="btn btn-info btn-sm"><i class="fas fa-eye"></i></button>
-                    `}
+                    <span class="badge ${campaign.status === 'active' ? 'badge-success' : campaign.status === 'paused' ? 'badge-warning' : 'badge-secondary'}">
+                        ${campaign.status === 'active' ? '✅ نشطة' : campaign.status === 'paused' ? '⏸️ موقفة' : '🔴 منتهية'}
+                    </span>
+                </td>
+                <td>
+                    <button class="btn btn-info btn-sm" onclick="editCampaign('${campaign.id}')">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteCampaign('${campaign.id}')">
+                        <i class="fas fa-trash"></i>
+                    </button>
                 </td>
             </tr>
         `).join('');
 
     } catch (error) {
-        console.error('❌ خطأ في تحميل السحوبات:', error);
+        console.error('❌ خطأ في تحميل الحملات:', error);
+        const tbody = document.getElementById('campaignsTableBody');
+        if (tbody) {
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--danger);">❌ خطأ في تحميل الحملات</td></tr>';
+        }
     }
 }
+
+window.refreshCampaigns = function() {
+    loadCampaignsTable();
+};
+
+window.deleteCampaign = async function(campaignId) {
+    if (!confirm('⚠️ هل أنت متأكد من حذف هذه الحملة؟')) return;
+
+    try {
+        const { error } = await supabaseClient
+            .from('campaigns')
+            .delete()
+            .eq('id', campaignId);
+
+        if (error) throw error;
+
+        alert('✅ تم حذف الحملة بنجاح!');
+        loadCampaignsTable();
+
+    } catch (error) {
+        alert('❌ خطأ: ' + error.message);
+    }
+};
+
+window.editCampaign = function(campaignId) {
+    alert('🔧 سيتم إضافة ميزة التعديل قريباً');
+};
 
 // ==========================================================
 // ===== دوال السجلات والمحفظة =====
@@ -1801,10 +2853,6 @@ async function loadLogs() {
         console.error('❌ خطأ في تحميل السجلات:', error);
     }
 }
-
-// ==========================================================
-// ===== دوال إحصائيات الأدمن =====
-// ==========================================================
 
 async function loadAdminStats() {
     try {
@@ -1871,7 +2919,6 @@ async function loadAdminStats() {
             }
         }
 
-        // تحميل عدد الألعاب
         const { count: gamesCount } = await supabaseClient
             .from('games')
             .select('*', { count: 'exact', head: true })
@@ -1950,11 +2997,6 @@ async function loadWalletStats() {
 function getOffersHTML() { return `<h2 class="section-title">📢 Offerwalls</h2><p style="color: var(--text-secondary);">سيتم إضافة هذه الميزة قريباً...</p>`; }
 function getSurveysHTML() { return `<h2 class="section-title">📊 الاستبيانات</h2><p style="color: var(--text-secondary);">سيتم إضافة هذه الميزة قريباً...</p>`; }
 function getFaucetsHTML() { return `<h2 class="section-title">💰 الصنابير</h2><p style="color: var(--text-secondary);">سيتم إضافة هذه الميزة قريباً...</p>`; }
-function getSmartlinksHTML() { return `<h2 class="section-title">🔗 Smart Links</h2><p style="color: var(--text-secondary);">سيتم إضافة هذه الميزة قريباً...</p>`; }
-function getAdvertisersHTML() { return `<h2 class="section-title">📢 المعلنون</h2><p style="color: var(--text-secondary);">سيتم إضافة هذه الميزة قريباً...</p>`; }
-function getCampaignsHTML() { return `<h2 class="section-title">🚀 الحملات</h2><p style="color: var(--text-secondary);">سيتم إضافة هذه الميزة قريباً...</p>`; }
-function getLanguagesHTML() { return `<h2 class="section-title">🌍 اللغات</h2><p style="color: var(--text-secondary);">سيتم إضافة هذه الميزة قريباً...</p>`; }
-function getNotificationsHTML() { return `<h2 class="section-title">🔔 الإشعارات</h2><p style="color: var(--text-secondary);">سيتم إضافة هذه الميزة قريباً...</p>`; }
 function getAIHTML() { return `<h2 class="section-title">🤖 الذكاء الاصطناعي</h2><p style="color: var(--text-secondary);">سيتم إضافة هذه الميزة قريباً...</p>`; }
 function getAntiFraudHTML() { return `<h2 class="section-title">🛡️ مكافحة الغش</h2><p style="color: var(--text-secondary);">سيتم إضافة هذه الميزة قريباً...</p>`; }
 function getAPIsHTML() { return `<h2 class="section-title">🔌 APIs</h2><p style="color: var(--text-secondary);">سيتم إضافة هذه الميزة قريباً...</p>`; }
@@ -2096,6 +3138,38 @@ async function loadAdRequests() {
 }
 
 // ==========================================================
+// ===== دوال مساعدة إضافية =====
+// ==========================================================
+
+async function addLog(userId, eventType, description, details = null) {
+    try {
+        const { error } = await supabaseClient
+            .from('logs')
+            .insert([{
+                user_id: userId,
+                event_type: eventType,
+                event_description: description,
+                details: details,
+                ip_address: await getIPAddress()
+            }]);
+
+        if (error) console.error('❌ خطأ في إضافة السجل:', error);
+    } catch (e) {
+        console.error('❌ خطأ:', e);
+    }
+}
+
+async function getIPAddress() {
+    try {
+        const response = await fetch('https://api.ipify.org?format=json');
+        const data = await response.json();
+        return data.ip;
+    } catch (e) {
+        return 'unknown';
+    }
+}
+
+// ==========================================================
 // ===== عند تحميل الصفحة =====
 // ==========================================================
 
@@ -2103,15 +3177,6 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('🔍 Admin page loaded - بدأ التحميل');
     checkAdminSession();
     
-    // تحميل الأسعار عند فتح القسم
-    setTimeout(() => {
-        const pricesSection = document.getElementById('sectionPrices');
-        if (pricesSection) {
-            loadPrices();
-        }
-    }, 1000);
-    
-    // تحميل الجوائز للقسائم
     setTimeout(() => {
         loadPrizesForVouchers();
     }, 1000);
