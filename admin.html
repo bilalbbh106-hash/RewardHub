@@ -170,11 +170,33 @@
     </div>
 
     <!-- ========================================================== -->
-    <!--  جافا سكريبت (محمل محلياً)  -->
+    <!--  جافا سكريبت (تهيئة مباشرة)  -->
     <!-- ========================================================== -->
-    <script src="js/supabase-client.js"></script>
+    <script>
+        // ===== تهيئة Supabase مباشرة =====
+        const SUPABASE_URL = 'https://mpzupnectsanzjfqipul.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1wenVwbmVjdHNhbnpqZnFpcHVsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg0NTUyODYsImV4cCI6MjA2NDAzMTI4Nn0.5wYgyZgSrqS9lHRWD9Tf30M-gAhcLhY6QQzCGuF96Tg';
+
+        // إنشاء عميل Supabase
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+            auth: {
+                autoRefreshToken: true,
+                persistSession: true,
+                detectSessionInUrl: true
+            }
+        });
+
+        // حفظ في window عشان يكون متاح للجميع
+        window.supabaseClient = supabaseClient;
+
+        console.log('✅ Supabase Client جاهز!');
+        console.log('🔍 supabaseClient:', typeof supabaseClient);
+    </script>
+
+    <!-- تحميل الملفات الأخرى -->
     <script src="js/auth.js"></script>
     <script src="js/database.js"></script>
     <script src="js/admin.js"></script>
+
 </body>
 </html>
