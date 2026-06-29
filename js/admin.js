@@ -1,5 +1,5 @@
 // ==========================================================
-// RewardHub - Admin.js (النسخة المصححة)
+// RewardHub - Admin.js (النسخة الكاملة النهائية)
 // ==========================================================
 
 console.log('🔍 Admin.js بدأ التحميل...');
@@ -59,7 +59,6 @@ async function checkAdminSession() {
             }
         }
         
-        // إذا لم يكن هناك جلسة صالحة، اعرض شاشة تسجيل الدخول
         showLogin();
         
     } catch (error) {
@@ -124,7 +123,6 @@ if (loginForm) {
         console.log('🔍 3- جاري تسجيل الدخول بـ:', email);
 
         try {
-            // ===== تسجيل الدخول عبر Supabase Auth =====
             const { data, error } = await supabaseClient.auth.signInWithPassword({
                 email: email,
                 password: password
@@ -152,9 +150,6 @@ if (loginForm) {
 
             console.log('✅ 7- تم تسجيل الدخول، معرف المستخدم:', data.user.id);
 
-            // ===== التحقق من صلاحية الأدمن =====
-            console.log('🔍 8- جاري التحقق من صلاحية الأدمن...');
-            
             const { data: profile, error: profileError } = await supabaseClient
                 .from('users')
                 .select('*')
@@ -195,7 +190,6 @@ if (loginForm) {
 
             console.log('✅ 13- تم التحقق، المستخدم أدمن');
 
-            // ===== تسجيل الدخول ناجح =====
             adminUser = data.user;
             adminProfile = profile;
             sessionStorage.setItem('adminLoggedIn', 'true');
@@ -312,6 +306,7 @@ function loadSectionContent(section) {
             break;
         case 'prizes':
             content.innerHTML = getPrizesHTML();
+            setTimeout(loadPrizesTable, 300);
             break;
         case 'games':
             content.innerHTML = getGamesHTML();
@@ -379,7 +374,7 @@ function loadSectionContent(section) {
 }
 
 // ==========================================================
-// ===== دوال الأقسام (مختصرة) =====
+// ===== دوال الأقسام الرئيسية =====
 // ==========================================================
 
 function getDashboardHTML() {
@@ -457,7 +452,7 @@ function getDashboardHTML() {
                 <button class="btn btn-primary btn-sm" onclick="alert('فتح نموذج إضافة مستخدم')">
                     <i class="fas fa-user-plus"></i> إضافة مستخدم
                 </button>
-                <button class="btn btn-success btn-sm" onclick="alert('فتح نموذج إضافة جائزة')">
+                <button class="btn btn-success btn-sm" onclick="loadSection('prizes')">
                     <i class="fas fa-gift"></i> إضافة جائزة
                 </button>
                 <button class="btn btn-warning btn-sm" onclick="alert('فتح نموذج إضافة مهمة')">
@@ -474,7 +469,6 @@ function getDashboardHTML() {
     `;
 }
 
-// ===== دوال أخرى مختصرة =====
 function getUsersHTML() {
     return `
         <h2 class="section-title" style="text-align: right; font-size: 28px; margin-bottom: 24px;">
@@ -544,8 +538,249 @@ function getWithdrawalsHTML() {
     `;
 }
 
-// ===== باقي الدوال (نفس الكود السابق) =====
+// ==========================================================
+// ===== دوال الجوائز (المضافة حديثاً) =====
+// ==========================================================
+
+function getPrizesHTML() {
+    return `
+        <h2 class="section-title" style="text-align: right; font-size: 28px; margin-bottom: 24px;">
+            <i class="fas fa-gift"></i> إدارة الجوائز
+        </h2>
+
+        <div class="admin-form">
+            <h4>➕ إضافة جائزة جديدة</h4>
+            <form id="addPrizeForm" onsubmit="addNewPrize(event)">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>🏷️ اسم الجائزة</label>
+                        <input type="text" id="prizeName" class="form-control" placeholder="مثال: Google Play Card" required />
+                    </div>
+                    <div class="form-group">
+                        <label>💰 السعر ($)</label>
+                        <input type="number" id="prizePrice" class="form-control" placeholder="مثال: 25.00" step="0.01" required />
+                    </div>
+                    <div class="form-group">
+                        <label>📂 الفئة</label>
+                        <select id="prizeCategory" class="form-control">
+                            <option value="giftcard">🎫 بطاقة هدايا</option>
+                            <option value="game">🎮 قسيمة لعبة</option>
+                            <option value="crypto">₿ عملة رقمية</option>
+                            <option value="other">📦 أخرى</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>📦 الكمية المتاحة</label>
+                        <input type="number" id="prizeStock" class="form-control" placeholder="مثال: 100" value="10" />
+                    </div>
+                    <div class="form-group full-width">
+                        <label>🖼️ رابط الصورة (اختياري)</label>
+                        <input type="url" id="prizeImage" class="form-control" placeholder="https://example.com/image.png" />
+                    </div>
+                    <div class="form-group full-width">
+                        <label>📝 وصف الجائزة</label>
+                        <textarea id="prizeDescription" class="form-control" rows="3" placeholder="وصف الجائزة"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>🎮 اسم اللعبة (لجوائز الألعاب)</label>
+                        <input type="text" id="prizeGame" class="form-control" placeholder="مثال: Free Fire" />
+                    </div>
+                    <div class="form-group">
+                        <label>✅ الحالة</label>
+                        <select id="prizeStatus" class="form-control">
+                            <option value="true">🟢 متاحة</option>
+                            <option value="false">🔴 غير متاحة</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> حفظ الجائزة
+                    </button>
+                    <button type="reset" class="btn btn-secondary">إلغاء</button>
+                </div>
+                <div id="prizeResponse" style="display: none; margin-top: 12px;"></div>
+            </form>
+        </div>
+
+        <div class="admin-table-wrapper" style="margin-top: 20px;">
+            <div class="table-header">
+                <h4>🎁 قائمة الجوائز</h4>
+                <button class="btn btn-success btn-sm" onclick="refreshPrizes()">
+                    <i class="fas fa-sync"></i> تحديث
+                </button>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>الجائزة</th>
+                            <th>الفئة</th>
+                            <th>السعر</th>
+                            <th>المخزون</th>
+                            <th>الحالة</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="prizesTableBody">
+                        <tr><td colspan="7" style="text-align: center; color: var(--text-secondary);">جاري التحميل...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    `;
+}
+
+// ===== دوال الجوائز =====
+
+window.addNewPrize = async function(e) {
+    e.preventDefault();
+
+    const name = document.getElementById('prizeName').value.trim();
+    const price = parseFloat(document.getElementById('prizePrice').value);
+    const category = document.getElementById('prizeCategory').value;
+    const stock = parseInt(document.getElementById('prizeStock').value) || 0;
+    const image = document.getElementById('prizeImage').value.trim();
+    const description = document.getElementById('prizeDescription').value.trim();
+    const game = document.getElementById('prizeGame').value.trim();
+    const isActive = document.getElementById('prizeStatus').value === 'true';
+
+    const responseEl = document.getElementById('prizeResponse');
+    responseEl.style.display = 'none';
+
+    if (!name || !price || price <= 0) {
+        responseEl.style.display = 'block';
+        responseEl.className = 'admin-response error';
+        responseEl.textContent = '⚠️ يرجى إدخال اسم الجائزة وسعر صحيح';
+        return;
+    }
+
+    try {
+        const { data, error } = await supabaseClient
+            .from('prizes')
+            .insert([{
+                name: name,
+                price: price,
+                category: category,
+                stock: stock,
+                image_url: image || null,
+                description: description || null,
+                game_name: game || null,
+                is_active: isActive
+            }])
+            .select()
+            .single();
+
+        if (error) throw error;
+
+        responseEl.style.display = 'block';
+        responseEl.className = 'admin-response success';
+        responseEl.textContent = `✅ تم إضافة الجائزة "${name}" بنجاح!`;
+
+        document.getElementById('addPrizeForm').reset();
+        loadPrizesTable();
+
+        setTimeout(() => {
+            responseEl.style.display = 'none';
+        }, 5000);
+
+    } catch (error) {
+        responseEl.style.display = 'block';
+        responseEl.className = 'admin-response error';
+        responseEl.textContent = '❌ ' + error.message;
+    }
+};
+
+async function loadPrizesTable() {
+    try {
+        const { data: prizes, error } = await supabaseClient
+            .from('prizes')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        const tbody = document.getElementById('prizesTableBody');
+        if (!tbody) return;
+
+        if (!prizes || prizes.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-secondary);">لا توجد جوائز</td></tr>';
+            return;
+        }
+
+        const categoryNames = {
+            'giftcard': '🎫 بطاقة هدايا',
+            'game': '🎮 قسيمة لعبة',
+            'crypto': '₿ عملة رقمية',
+            'other': '📦 أخرى'
+        };
+
+        tbody.innerHTML = prizes.map((prize, index) => `
+            <tr>
+                <td>${index + 1}</td>
+                <td>
+                    <strong>${prize.name}</strong>
+                    ${prize.image_url ? `<br><img src="${prize.image_url}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px; margin-top: 4px;" />` : ''}
+                </td>
+                <td>${categoryNames[prize.category] || prize.category}</td>
+                <td style="color: var(--secondary); font-weight: 700;">$${parseFloat(prize.price).toFixed(2)}</td>
+                <td>${prize.stock}</td>
+                <td>
+                    <span class="badge ${prize.is_active ? 'badge-success' : 'badge-danger'}">
+                        ${prize.is_active ? '✅ متاحة' : '❌ غير متاحة'}
+                    </span>
+                </td>
+                <td>
+                    <button class="btn btn-info btn-sm" onclick="editPrize('${prize.id}')">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-danger btn-sm" onclick="deletePrize('${prize.id}')">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+
+    } catch (error) {
+        console.error('❌ خطأ في تحميل الجوائز:', error);
+        const tbody = document.getElementById('prizesTableBody');
+        if (tbody) {
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--danger);">❌ خطأ في تحميل الجوائز</td></tr>';
+        }
+    }
+}
+
+window.refreshPrizes = function() {
+    loadPrizesTable();
+};
+
+window.deletePrize = async function(prizeId) {
+    if (!confirm('⚠️ هل أنت متأكد من حذف هذه الجائزة؟ لا يمكن التراجع عن هذا الإجراء.')) return;
+
+    try {
+        const { error } = await supabaseClient
+            .from('prizes')
+            .delete()
+            .eq('id', prizeId);
+
+        if (error) throw error;
+
+        alert('✅ تم حذف الجائزة بنجاح!');
+        loadPrizesTable();
+
+    } catch (error) {
+        alert('❌ خطأ: ' + error.message);
+    }
+};
+
+window.editPrize = function(prizeId) {
+    alert('🔧 سيتم إضافة ميزة التعديل قريباً');
+};
+
+// ==========================================================
 // ===== دوال التحميل =====
+// ==========================================================
 
 async function loadUsersTable() {
     try {
@@ -627,7 +862,10 @@ async function loadWithdrawalsTable() {
     }
 }
 
+// ==========================================================
 // ===== دوال السجلات والمحفظة =====
+// ==========================================================
+
 async function loadLogs() {
     try {
         const { data: logs, error } = await supabaseClient
@@ -661,7 +899,10 @@ async function loadLogs() {
     }
 }
 
+// ==========================================================
 // ===== دوال إحصائيات الأدمن =====
+// ==========================================================
+
 async function loadAdminStats() {
     try {
         const { count: usersCount } = await supabaseClient
@@ -790,47 +1031,166 @@ async function loadWalletStats() {
     }
 }
 
+// ==========================================================
 // ===== دوال الأقسام الفارغة =====
-function getPrizesHTML() { return `<h2>🎁 الجوائز</h2><p>قريباً...</p>`; }
-function getGamesHTML() { return `<h2>🎮 الألعاب</h2><p>قريباً...</p>`; }
-function getVouchersHTML() { return `<h2>🎫 القسائم</h2><p>قريباً...</p>`; }
-function getTasksHTML() { return `<h2>📝 المهام</h2><p>قريباً...</p>`; }
-function getOffersHTML() { return `<h2>📢 Offerwalls</h2><p>قريباً...</p>`; }
-function getSurveysHTML() { return `<h2>📊 الاستبيانات</h2><p>قريباً...</p>`; }
-function getFaucetsHTML() { return `<h2>💰 الصنابير</h2><p>قريباً...</p>`; }
-function getSmartlinksHTML() { return `<h2>🔗 Smart Links</h2><p>قريباً...</p>`; }
-function getAdvertisersHTML() { return `<h2>📢 المعلنون</h2><p>قريباً...</p>`; }
-function getCampaignsHTML() { return `<h2>🚀 الحملات</h2><p>قريباً...</p>`; }
-function getPricesHTML() { return `<h2>💰 الأسعار</h2><p>قريباً...</p>`; }
-function getLanguagesHTML() { return `<h2>🌍 اللغات</h2><p>قريباً...</p>`; }
-function getNotificationsHTML() { return `<h2>🔔 الإشعارات</h2><p>قريباً...</p>`; }
-function getAIHTML() { return `<h2>🤖 الذكاء الاصطناعي</h2><p>قريباً...</p>`; }
-function getAntiFraudHTML() { return `<h2>🛡️ مكافحة الغش</h2><p>قريباً...</p>`; }
-function getAPIsHTML() { return `<h2>🔌 APIs</h2><p>قريباً...</p>`; }
-function getBackupHTML() { return `<h2>💾 النسخ الاحتياطي</h2><p>قريباً...</p>`; }
-function getLogsHTML() { return `
-    <h2>📋 سجل العمليات</h2>
-    <div class="admin-table-wrapper">
-        <div class="table-container">
-            <table>
-                <thead><tr><th>التاريخ</th><th>المستخدم</th><th>الحدث</th><th>التفاصيل</th><th>IP</th></tr></thead>
-                <tbody id="logsTableBody"><tr><td colspan="5" style="text-align:center;color:var(--text-secondary);">جاري التحميل...</td></tr></tbody>
-            </table>
-        </div>
-    </div>
-`; }
-function getWalletHTML() { return `
-    <h2>💳 محفظة الأدمن</h2>
-    <div class="admin-stats-grid">
-        <div class="admin-stat-card gradient-card"><div class="stat-icon">💵</div><div class="stat-number" id="walletTotal">$0.00</div><div class="stat-label">إجمالي المحفظة</div></div>
-        <div class="admin-stat-card"><div class="stat-icon">📤</div><div class="stat-number" id="walletWithdrawn">$0.00</div><div class="stat-label">إجمالي السحوبات</div></div>
-        <div class="admin-stat-card"><div class="stat-icon">📥</div><div class="stat-number" id="walletDeposited">$0.00</div><div class="stat-label">إجمالي الإيداعات</div></div>
-        <div class="admin-stat-card"><div class="stat-icon">🏦</div><div class="stat-number" id="walletBalance">$0.00</div><div class="stat-label">الرصيد المتاح</div></div>
-    </div>
-`; }
-function getAdRequestsHTML() { return `<h2>📢 طلبات الإعلان</h2><p>قريباً...</p>`; }
+// ==========================================================
 
+function getGamesHTML() { return `<h2 class="section-title">🎮 الألعاب</h2><p style="color: var(--text-secondary);">سيتم إضافة هذه الميزة قريباً...</p>`; }
+function getVouchersHTML() { return `<h2 class="section-title">🎫 القسائم</h2><p style="color: var(--text-secondary);">سيتم إضافة هذه الميزة قريباً...</p>`; }
+function getTasksHTML() { return `<h2 class="section-title">📝 المهام</h2><p style="color: var(--text-secondary);">سيتم إضافة هذه الميزة قريباً...</p>`; }
+function getOffersHTML() { return `<h2 class="section-title">📢 Offerwalls</h2><p style="color: var(--text-secondary);">سيتم إضافة هذه الميزة قريباً...</p>`; }
+function getSurveysHTML() { return `<h2 class="section-title">📊 الاستبيانات</h2><p style="color: var(--text-secondary);">سيتم إضافة هذه الميزة قريباً...</p>`; }
+function getFaucetsHTML() { return `<h2 class="section-title">💰 الصنابير</h2><p style="color: var(--text-secondary);">سيتم إضافة هذه الميزة قريباً...</p>`; }
+function getSmartlinksHTML() { return `<h2 class="section-title">🔗 Smart Links</h2><p style="color: var(--text-secondary);">سيتم إضافة هذه الميزة قريباً...</p>`; }
+function getAdvertisersHTML() { return `<h2 class="section-title">📢 المعلنون</h2><p style="color: var(--text-secondary);">سيتم إضافة هذه الميزة قريباً...</p>`; }
+function getCampaignsHTML() { return `<h2 class="section-title">🚀 الحملات</h2><p style="color: var(--text-secondary);">سيتم إضافة هذه الميزة قريباً...</p>`; }
+function getPricesHTML() { return `<h2 class="section-title">💰 الأسعار</h2><p style="color: var(--text-secondary);">سيتم إضافة هذه الميزة قريباً...</p>`; }
+function getLanguagesHTML() { return `<h2 class="section-title">🌍 اللغات</h2><p style="color: var(--text-secondary);">سيتم إضافة هذه الميزة قريباً...</p>`; }
+function getNotificationsHTML() { return `<h2 class="section-title">🔔 الإشعارات</h2><p style="color: var(--text-secondary);">سيتم إضافة هذه الميزة قريباً...</p>`; }
+function getAIHTML() { return `<h2 class="section-title">🤖 الذكاء الاصطناعي</h2><p style="color: var(--text-secondary);">سيتم إضافة هذه الميزة قريباً...</p>`; }
+function getAntiFraudHTML() { return `<h2 class="section-title">🛡️ مكافحة الغش</h2><p style="color: var(--text-secondary);">سيتم إضافة هذه الميزة قريباً...</p>`; }
+function getAPIsHTML() { return `<h2 class="section-title">🔌 APIs</h2><p style="color: var(--text-secondary);">سيتم إضافة هذه الميزة قريباً...</p>`; }
+function getBackupHTML() { return `<h2 class="section-title">💾 النسخ الاحتياطي</h2><p style="color: var(--text-secondary);">سيتم إضافة هذه الميزة قريباً...</p>`; }
+
+function getLogsHTML() {
+    return `
+        <h2 class="section-title" style="text-align: right; font-size: 28px; margin-bottom: 24px;">
+            <i class="fas fa-history"></i> سجل العمليات
+        </h2>
+        <div class="admin-table-wrapper">
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>التاريخ</th>
+                            <th>المستخدم</th>
+                            <th>الحدث</th>
+                            <th>التفاصيل</th>
+                            <th>IP</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logsTableBody">
+                        <tr><td colspan="5" style="text-align: center; color: var(--text-secondary);">جاري التحميل...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    `;
+}
+
+function getWalletHTML() {
+    return `
+        <h2 class="section-title" style="text-align: right; font-size: 28px; margin-bottom: 24px;">
+            <i class="fas fa-wallet"></i> محفظة الأدمن
+        </h2>
+        <div class="admin-stats-grid">
+            <div class="admin-stat-card gradient-card">
+                <div class="stat-icon">💵</div>
+                <div class="stat-number" id="walletTotal" style="-webkit-text-fill-color: white;">$0.00</div>
+                <div class="stat-label">إجمالي المحفظة</div>
+            </div>
+            <div class="admin-stat-card">
+                <div class="stat-icon">📤</div>
+                <div class="stat-number" id="walletWithdrawn" style="color: var(--danger);">$0.00</div>
+                <div class="stat-label">إجمالي السحوبات</div>
+            </div>
+            <div class="admin-stat-card">
+                <div class="stat-icon">📥</div>
+                <div class="stat-number" id="walletDeposited" style="color: var(--success);">$0.00</div>
+                <div class="stat-label">إجمالي الإيداعات</div>
+            </div>
+            <div class="admin-stat-card">
+                <div class="stat-icon">🏦</div>
+                <div class="stat-number" id="walletBalance" style="color: var(--secondary);">$0.00</div>
+                <div class="stat-label">الرصيد المتاح</div>
+            </div>
+        </div>
+    `;
+}
+
+function getAdRequestsHTML() {
+    return `
+        <h2 class="section-title" style="text-align: right; font-size: 28px; margin-bottom: 24px;">
+            <i class="fas fa-bullhorn" style="color: var(--accent);"></i> طلبات الإعلان
+        </h2>
+        <div class="admin-table-wrapper">
+            <div class="table-header">
+                <h4>📢 طلبات الإعلان الواردة</h4>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>المعلن</th>
+                            <th>نوع الإعلان</th>
+                            <th>الرابط</th>
+                            <th>المبلغ</th>
+                            <th>التاريخ</th>
+                            <th>الحالة</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adRequestsTableBody">
+                        <tr><td colspan="8" style="text-align: center; color: var(--text-secondary);">جاري التحميل...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    `;
+}
+
+async function loadAdRequests() {
+    try {
+        const { data: requests, error } = await supabaseClient
+            .from('ad_requests')
+            .select('*, users(username, email)')
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        const tbody = document.getElementById('adRequestsTableBody');
+        if (!tbody) return;
+
+        if (!requests || requests.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-secondary);">لا توجد طلبات إعلان</td></tr>';
+            return;
+        }
+
+        const typeNames = {
+            website: '🌐 موقع',
+            social: '📱 تواصل اجتماعي',
+            premium: '⭐ إعلان مميز'
+        };
+
+        tbody.innerHTML = requests.map((r, index) => `
+            <tr>
+                <td>${index + 1}</td>
+                <td>
+                    <strong>${r.users?.username || 'مستخدم'}</strong>
+                    <br><small style="color: var(--text-muted);">${r.users?.email || ''}</small>
+                </td>
+                <td>${typeNames[r.type] || r.type}</td>
+                <td><a href="${r.link}" target="_blank" style="color: var(--secondary); font-size: 12px; word-break: break-all;">${r.link.substring(0, 30)}...</a></td>
+                <td><span style="color: var(--secondary); font-weight: 700;">$${r.type === 'premium' ? '25.00' : '10.00'}</span></td>
+                <td style="font-size: 12px; color: var(--text-muted);">${new Date(r.created_at).toLocaleDateString('ar-EG')}</td>
+                <td><span class="badge badge-warning">⏳ قيد المراجعة</span></td>
+                <td>
+                    <button class="btn btn-success btn-sm"><i class="fas fa-check"></i></button>
+                    <button class="btn btn-danger btn-sm"><i class="fas fa-times"></i></button>
+                </td>
+            </tr>
+        `).join('');
+
+    } catch (error) {
+        console.error('❌ خطأ في تحميل طلبات الإعلان:', error);
+    }
+}
+
+// ==========================================================
 // ===== عند تحميل الصفحة =====
+// ==========================================================
+
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🔍 Admin page loaded - بدأ التحميل');
     checkAdminSession();
