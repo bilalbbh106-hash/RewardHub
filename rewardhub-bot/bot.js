@@ -1,5 +1,5 @@
 // ==========================================================
-// RewardHub - بوت إدارة تيليجرام
+// RewardHub - بوت إدارة تيليجرام (النسخة المصححة)
 // ==========================================================
 
 const { Telegraf, Markup } = require('telegraf');
@@ -37,19 +37,19 @@ bot.start(async (ctx) => {
 
 📋 **الأوامر المتاحة:**
 
-📊 `/stats` - إحصائيات الموقع
-👥 `/users` - قائمة المستخدمين
-💰 `/withdrawals` - طلبات السحب
-🎁 `/prizes` - إدارة الجوائز
-📝 `/tasks` - إدارة المهام
-🔗 `/smartlinks` - إدارة الروابط الذكية
-📢 `/notify` - إرسال إشعار للجميع
-🛡️ `/antifraud` - إعدادات مكافحة الغش
-⚙️ `/settings` - إعدادات الموقع
-📊 `/logs` - سجل العمليات
+📊 /stats - إحصائيات الموقع
+👥 /users - قائمة المستخدمين
+💰 /withdrawals - طلبات السحب
+🎁 /prizes - إدارة الجوائز
+📝 /tasks - إدارة المهام
+🔗 /smartlinks - إدارة الروابط الذكية
+📢 /notify - إرسال إشعار للجميع
+🛡️ /antifraud - إعدادات مكافحة الغش
+⚙️ /settings - إعدادات الموقع
+📊 /logs - سجل العمليات
 
-✅ `/approve [رقم]` - قبول سحب
-❌ `/reject [رقم] [السبب]` - رفض سحب
+✅ /approve [رقم] - قبول سحب
+❌ /reject [رقم] [السبب] - رفض سحب
 
 💡 **للإضافة:**
 \`/addprize [الاسم] [السعر] [الفئة]\`
@@ -115,36 +115,50 @@ bot.command('stats', async (ctx) => {
     if (ctx.chat.id.toString() !== ADMIN_CHAT_ID) return;
     
     try {
-        const { count: usersCount } = await supabase
+        const { count: usersCount, error: usersError } = await supabase
             .from('users')
             .select('*', { count: 'exact', head: true });
         
-        const { data: earningsData } = await supabase
+        if (usersError) throw usersError;
+        
+        const { data: earningsData, error: earningsError } = await supabase
             .from('users')
             .select('total_earned');
+        
+        if (earningsError) throw earningsError;
+        
         const totalEarnings = earningsData?.reduce((sum, u) => sum + (u.total_earned || 0), 0) || 0;
         
-        const { data: withdrawalsData } = await supabase
+        const { data: withdrawalsData, error: withdrawalsError } = await supabase
             .from('withdrawals')
             .select('amount')
             .eq('status', 'approved');
+        
+        if (withdrawalsError) throw withdrawalsError;
+        
         const totalWithdrawals = withdrawalsData?.reduce((sum, w) => sum + (w.amount || 0), 0) || 0;
         
-        const { count: pendingCount } = await supabase
+        const { count: pendingCount, error: pendingError } = await supabase
             .from('withdrawals')
             .select('*', { count: 'exact', head: true })
             .eq('status', 'pending');
         
-        const { count: tasksCount } = await supabase
+        if (pendingError) throw pendingError;
+        
+        const { count: tasksCount, error: tasksError } = await supabase
             .from('user_tasks')
             .select('*', { count: 'exact', head: true })
             .eq('status', 'completed');
         
+        if (tasksError) throw tasksError;
+        
         const today = new Date().toISOString().split('T')[0];
-        const { count: todayUsers } = await supabase
+        const { count: todayUsers, error: todayError } = await supabase
             .from('users')
             .select('*', { count: 'exact', head: true })
             .gte('created_at', today);
+        
+        if (todayError) throw todayError;
         
         await ctx.reply(
             `📊 **إحصائيات RewardHub**
@@ -159,14 +173,16 @@ bot.command('stats', async (ctx) => {
             { parse_mode: 'Markdown' }
         );
     } catch (error) {
+        console.error('❌ خطأ في الإحصائيات:', error);
         ctx.reply('❌ خطأ في جلب الإحصائيات: ' + error.message);
     }
 });
 
 // ==========================================================
-// ===== السحوبات =====
+// ===== بقية الأوامر (نفس الكود السابق) =====
 // ==========================================================
 
+// ===== السحوبات =====
 bot.command('withdrawals', async (ctx) => {
     if (ctx.chat.id.toString() !== ADMIN_CHAT_ID) return;
     
@@ -325,10 +341,7 @@ bot.command('reject', async (ctx) => {
     }
 });
 
-// ==========================================================
 // ===== الجوائز =====
-// ==========================================================
-
 bot.command('prizes', async (ctx) => {
     if (ctx.chat.id.toString() !== ADMIN_CHAT_ID) return;
     
@@ -431,10 +444,7 @@ bot.command('deleteprize', async (ctx) => {
     }
 });
 
-// ==========================================================
 // ===== المهام =====
-// ==========================================================
-
 bot.command('tasks', async (ctx) => {
     if (ctx.chat.id.toString() !== ADMIN_CHAT_ID) return;
     
@@ -536,10 +546,7 @@ bot.command('deletetask', async (ctx) => {
     }
 });
 
-// ==========================================================
 // ===== Smart Links =====
-// ==========================================================
-
 bot.command('smartlinks', async (ctx) => {
     if (ctx.chat.id.toString() !== ADMIN_CHAT_ID) return;
     
@@ -640,10 +647,7 @@ bot.command('deletelink', async (ctx) => {
     }
 });
 
-// ==========================================================
 // ===== الإشعارات =====
-// ==========================================================
-
 bot.command('notify', async (ctx) => {
     if (ctx.chat.id.toString() !== ADMIN_CHAT_ID) return;
     
@@ -684,10 +688,7 @@ bot.command('notify', async (ctx) => {
     }
 });
 
-// ==========================================================
 // ===== المستخدمين =====
-// ==========================================================
-
 bot.command('users', async (ctx) => {
     if (ctx.chat.id.toString() !== ADMIN_CHAT_ID) return;
     
@@ -719,10 +720,7 @@ bot.command('users', async (ctx) => {
     }
 });
 
-// ==========================================================
 // ===== سجل العمليات =====
-// ==========================================================
-
 bot.command('logs', async (ctx) => {
     if (ctx.chat.id.toString() !== ADMIN_CHAT_ID) return;
     
@@ -753,10 +751,7 @@ bot.command('logs', async (ctx) => {
     }
 });
 
-// ==========================================================
 // ===== مكافحة الغش =====
-// ==========================================================
-
 bot.command('antifraud', async (ctx) => {
     if (ctx.chat.id.toString() !== ADMIN_CHAT_ID) return;
     
@@ -773,9 +768,11 @@ bot.command('antifraud', async (ctx) => {
             settingsMap[s.setting_key] = s.setting_value;
         });
         
-        const { count: attemptsCount } = await supabase
+        const { count: attemptsCount, error: countError } = await supabase
             .from('referral_attempts')
             .select('*', { count: 'exact', head: true });
+        
+        if (countError) throw countError;
         
         await ctx.reply(
             `🛡️ **إعدادات مكافحة الغش**
@@ -822,10 +819,7 @@ bot.command('togglefraud', async (ctx) => {
     }
 });
 
-// ==========================================================
 // ===== الإعدادات =====
-// ==========================================================
-
 bot.command('settings', async (ctx) => {
     if (ctx.chat.id.toString() !== ADMIN_CHAT_ID) return;
     
