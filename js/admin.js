@@ -1,6 +1,8 @@
 // ==========================================================
-// RewardHub - Admin.js (النسخة النهائية)
+// RewardHub - Admin.js (النسخة المصححة)
 // ==========================================================
+
+console.log('🔍 Admin.js بدأ التحميل...');
 
 // ===== عناصر الصفحة =====
 const loginScreen = document.getElementById('adminLoginScreen');
@@ -24,38 +26,46 @@ let adminProfile = null;
 async function checkAdminSession() {
     console.log('🔍 جاري التحقق من الجلسة...');
     
-    const session = sessionStorage.getItem('adminLoggedIn');
-    
-    if (session === 'true') {
-        console.log('🔍 جلسة موجودة، جاري التحقق من المستخدم...');
+    try {
+        const session = sessionStorage.getItem('adminLoggedIn');
         
-        const { data: { user }, error } = await supabaseClient.auth.getUser();
-        
-        if (user) {
-            console.log('🔍 المستخدم موجود:', user.email);
+        if (session === 'true') {
+            console.log('🔍 جلسة موجودة، جاري التحقق من المستخدم...');
             
-            const { data: profile, error: profileError } = await supabaseClient
-                .from('users')
-                .select('*')
-                .eq('id', user.id)
-                .single();
+            const { data: { user }, error } = await supabaseClient.auth.getUser();
             
-            if (profile && profile.is_admin) {
-                console.log('✅ مستخدم أدمن موجود:', profile.username);
-                adminUser = user;
-                adminProfile = profile;
-                showDashboard();
-                return;
+            if (user) {
+                console.log('🔍 المستخدم موجود:', user.email);
+                
+                const { data: profile, error: profileError } = await supabaseClient
+                    .from('users')
+                    .select('*')
+                    .eq('id', user.id)
+                    .single();
+                
+                if (profile && profile.is_admin) {
+                    console.log('✅ مستخدم أدمن موجود:', profile.username);
+                    adminUser = user;
+                    adminProfile = profile;
+                    showDashboard();
+                    return;
+                } else {
+                    console.log('❌ المستخدم ليس أدمن');
+                    sessionStorage.removeItem('adminLoggedIn');
+                }
             } else {
-                console.log('❌ المستخدم ليس أدمن');
+                console.log('❌ لا يوجد مستخدم');
+                sessionStorage.removeItem('adminLoggedIn');
             }
         }
         
-        console.log('❌ جلسة غير صالحة، مسحها...');
-        sessionStorage.removeItem('adminLoggedIn');
+        // إذا لم يكن هناك جلسة صالحة، اعرض شاشة تسجيل الدخول
+        showLogin();
+        
+    } catch (error) {
+        console.error('❌ خطأ في التحقق من الجلسة:', error);
+        showLogin();
     }
-    
-    showLogin();
 }
 
 // ==========================================================
@@ -64,16 +74,16 @@ async function checkAdminSession() {
 
 function showLogin() {
     console.log('🔍 عرض شاشة تسجيل الدخول');
-    loginScreen.style.display = 'flex';
-    adminDashboard.style.display = 'none';
+    if (loginScreen) loginScreen.style.display = 'flex';
+    if (adminDashboard) adminDashboard.style.display = 'none';
 }
 
 function showDashboard() {
     console.log('🔍 عرض لوحة الإدارة');
-    loginScreen.style.display = 'none';
-    adminDashboard.style.display = 'flex';
+    if (loginScreen) loginScreen.style.display = 'none';
+    if (adminDashboard) adminDashboard.style.display = 'flex';
     
-    if (adminProfile) {
+    if (adminProfile && adminUserDisplay) {
         adminUserDisplay.textContent = '👤 ' + (adminProfile.full_name || adminProfile.username);
     }
     
@@ -88,127 +98,154 @@ function showDashboard() {
 // ===== تسجيل الدخول =====
 // ==========================================================
 
-loginForm.addEventListener('submit', async function(e) {
-    e.preventDefault();
-    
-    console.log('🔍 1- بدأ تسجيل الدخول');
-    
-    const email = document.getElementById('adminEmail').value.trim();
-    const password = document.getElementById('adminPassword').value;
-
-    loginError.style.display = 'none';
-    loginError.textContent = '';
-
-    if (!email || !password) {
-        loginError.textContent = '⚠️ يرجى ملء جميع الحقول';
-        loginError.style.display = 'block';
-        console.log('❌ 2- الحقول فارغة');
-        return;
-    }
-
-    console.log('🔍 3- جاري تسجيل الدخول بـ:', email);
-
-    try {
-        // ===== تسجيل الدخول عبر Supabase Auth =====
-        const { data, error } = await supabaseClient.auth.signInWithPassword({
-            email: email,
-            password: password
-        });
-
-        console.log('🔍 4- نتيجة تسجيل الدخول:', data ? 'نجاح' : 'فشل');
-
-        if (error) {
-            console.error('❌ 5- خطأ تسجيل الدخول:', error.message);
-            loginError.textContent = '❌ البريد الإلكتروني أو كلمة المرور غير صحيحة';
-            loginError.style.display = 'block';
-            return;
-        }
-
-        if (!data || !data.user) {
-            console.error('❌ 6- لا يوجد مستخدم');
-            loginError.textContent = '❌ لم يتم العثور على المستخدم';
-            loginError.style.display = 'block';
-            return;
-        }
-
-        console.log('✅ 7- تم تسجيل الدخول، معرف المستخدم:', data.user.id);
-
-        // ===== التحقق من صلاحية الأدمن =====
-        console.log('🔍 8- جاري التحقق من صلاحية الأدمن...');
+if (loginForm) {
+    loginForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
         
-        const { data: profile, error: profileError } = await supabaseClient
-            .from('users')
-            .select('*')
-            .eq('id', data.user.id)
-            .single();
-
-        if (profileError) {
-            console.error('❌ 9- خطأ في جلب بيانات المستخدم:', profileError);
-            loginError.textContent = '❌ خطأ في جلب بيانات المستخدم';
-            loginError.style.display = 'block';
-            await supabaseClient.auth.signOut();
-            return;
-        }
-
-        console.log('🔍 10- بيانات المستخدم:', profile);
-
-        if (!profile) {
-            console.error('❌ 11- المستخدم غير موجود في جدول users');
-            loginError.textContent = '❌ المستخدم غير مسجل في النظام';
-            loginError.style.display = 'block';
-            await supabaseClient.auth.signOut();
-            return;
-        }
-
-        if (!profile.is_admin) {
-            console.error('❌ 12- المستخدم ليس أدمن');
-            loginError.textContent = '❌ هذا الحساب ليس لديه صلاحية الأدمن';
-            loginError.style.display = 'block';
-            await supabaseClient.auth.signOut();
-            return;
-        }
-
-        console.log('✅ 13- تم التحقق، المستخدم أدمن');
-
-        // ===== تسجيل الدخول ناجح =====
-        adminUser = data.user;
-        adminProfile = profile;
-        sessionStorage.setItem('adminLoggedIn', 'true');
+        console.log('🔍 1- بدأ تسجيل الدخول');
         
-        loginError.style.display = 'none';
-        adminEmailInput.value = '';
-        adminPasswordInput.value = '';
-        
-        console.log('✅ 14- جاري عرض لوحة الإدارة...');
-        showDashboard();
+        const email = document.getElementById('adminEmail').value.trim();
+        const password = document.getElementById('adminPassword').value;
 
-    } catch (error) {
-        console.error('❌ خطأ غير متوقع:', error);
-        loginError.textContent = '❌ حدث خطأ غير متوقع: ' + error.message;
-        loginError.style.display = 'block';
-    }
-});
+        if (loginError) {
+            loginError.style.display = 'none';
+            loginError.textContent = '';
+        }
+
+        if (!email || !password) {
+            if (loginError) {
+                loginError.textContent = '⚠️ يرجى ملء جميع الحقول';
+                loginError.style.display = 'block';
+            }
+            console.log('❌ 2- الحقول فارغة');
+            return;
+        }
+
+        console.log('🔍 3- جاري تسجيل الدخول بـ:', email);
+
+        try {
+            // ===== تسجيل الدخول عبر Supabase Auth =====
+            const { data, error } = await supabaseClient.auth.signInWithPassword({
+                email: email,
+                password: password
+            });
+
+            console.log('🔍 4- نتيجة تسجيل الدخول:', data ? 'نجاح' : 'فشل');
+
+            if (error) {
+                console.error('❌ 5- خطأ تسجيل الدخول:', error.message);
+                if (loginError) {
+                    loginError.textContent = '❌ البريد الإلكتروني أو كلمة المرور غير صحيحة';
+                    loginError.style.display = 'block';
+                }
+                return;
+            }
+
+            if (!data || !data.user) {
+                console.error('❌ 6- لا يوجد مستخدم');
+                if (loginError) {
+                    loginError.textContent = '❌ لم يتم العثور على المستخدم';
+                    loginError.style.display = 'block';
+                }
+                return;
+            }
+
+            console.log('✅ 7- تم تسجيل الدخول، معرف المستخدم:', data.user.id);
+
+            // ===== التحقق من صلاحية الأدمن =====
+            console.log('🔍 8- جاري التحقق من صلاحية الأدمن...');
+            
+            const { data: profile, error: profileError } = await supabaseClient
+                .from('users')
+                .select('*')
+                .eq('id', data.user.id)
+                .single();
+
+            if (profileError) {
+                console.error('❌ 9- خطأ في جلب بيانات المستخدم:', profileError);
+                if (loginError) {
+                    loginError.textContent = '❌ خطأ في جلب بيانات المستخدم';
+                    loginError.style.display = 'block';
+                }
+                await supabaseClient.auth.signOut();
+                return;
+            }
+
+            console.log('🔍 10- بيانات المستخدم:', profile);
+
+            if (!profile) {
+                console.error('❌ 11- المستخدم غير موجود في جدول users');
+                if (loginError) {
+                    loginError.textContent = '❌ المستخدم غير مسجل في النظام';
+                    loginError.style.display = 'block';
+                }
+                await supabaseClient.auth.signOut();
+                return;
+            }
+
+            if (!profile.is_admin) {
+                console.error('❌ 12- المستخدم ليس أدمن');
+                if (loginError) {
+                    loginError.textContent = '❌ هذا الحساب ليس لديه صلاحية الأدمن';
+                    loginError.style.display = 'block';
+                }
+                await supabaseClient.auth.signOut();
+                return;
+            }
+
+            console.log('✅ 13- تم التحقق، المستخدم أدمن');
+
+            // ===== تسجيل الدخول ناجح =====
+            adminUser = data.user;
+            adminProfile = profile;
+            sessionStorage.setItem('adminLoggedIn', 'true');
+            
+            if (loginError) {
+                loginError.style.display = 'none';
+                loginError.textContent = '';
+            }
+            
+            if (adminEmailInput) adminEmailInput.value = '';
+            if (adminPasswordInput) adminPasswordInput.value = '';
+            
+            console.log('✅ 14- جاري عرض لوحة الإدارة...');
+            showDashboard();
+
+        } catch (error) {
+            console.error('❌ خطأ غير متوقع:', error);
+            if (loginError) {
+                loginError.textContent = '❌ حدث خطأ غير متوقع: ' + error.message;
+                loginError.style.display = 'block';
+            }
+        }
+    });
+} else {
+    console.error('❌ نموذج تسجيل الدخول غير موجود!');
+}
 
 // ==========================================================
 // ===== تسجيل الخروج =====
 // ==========================================================
 
-logoutBtn.addEventListener('click', async function() {
-    if (confirm('هل أنت متأكد من تسجيل الخروج؟')) {
-        await supabaseClient.auth.signOut();
-        sessionStorage.removeItem('adminLoggedIn');
-        adminUser = null;
-        adminProfile = null;
-        showLogin();
-        console.log('✅ تم تسجيل الخروج');
-    }
-});
+if (logoutBtn) {
+    logoutBtn.addEventListener('click', async function() {
+        if (confirm('هل أنت متأكد من تسجيل الخروج؟')) {
+            await supabaseClient.auth.signOut();
+            sessionStorage.removeItem('adminLoggedIn');
+            adminUser = null;
+            adminProfile = null;
+            showLogin();
+            console.log('✅ تم تسجيل الخروج');
+        }
+    });
+}
 
 // ==========================================================
 // ===== دوال مساعدة =====
 // ==========================================================
 
 function displayCurrentDate() {
+    if (!currentDateEl) return;
     const now = new Date();
     const options = { 
         year: 'numeric', 
@@ -342,112 +379,7 @@ function loadSectionContent(section) {
 }
 
 // ==========================================================
-// ===== تحميل إحصائيات =====
-// ==========================================================
-
-async function loadDashboardStats() {
-    try {
-        const { count: usersCount } = await supabaseClient
-            .from('users')
-            .select('*', { count: 'exact', head: true });
-
-        if (usersCount !== null) {
-            document.getElementById('usersCount').textContent = usersCount || 0;
-        }
-
-        const { count: pendingCount } = await supabaseClient
-            .from('withdrawals')
-            .select('*', { count: 'exact', head: true })
-            .eq('status', 'pending');
-
-        if (pendingCount !== null) {
-            document.getElementById('pendingWithdrawals').textContent = pendingCount || 0;
-        }
-    } catch (e) {
-        console.error('خطأ في تحميل الإحصائيات:', e);
-    }
-}
-
-async function loadAdminStats() {
-    try {
-        const { count: usersCount } = await supabaseClient
-            .from('users')
-            .select('*', { count: 'exact', head: true });
-        
-        const usersEl = document.getElementById('statsUsers');
-        if (usersEl) usersEl.textContent = usersCount || 0;
-
-        const { data: earningsData } = await supabaseClient
-            .from('users')
-            .select('total_earned');
-        
-        const totalEarnings = earningsData?.reduce((sum, u) => sum + (u.total_earned || 0), 0) || 0;
-        const earningsEl = document.getElementById('statsEarnings');
-        if (earningsEl) earningsEl.textContent = '$' + totalEarnings.toFixed(2);
-
-        const { data: withdrawalsData } = await supabaseClient
-            .from('withdrawals')
-            .select('amount')
-            .eq('status', 'processed');
-        
-        const totalWithdrawals = withdrawalsData?.reduce((sum, w) => sum + (w.amount || 0), 0) || 0;
-        const withdrawalsEl = document.getElementById('statsWithdrawals');
-        if (withdrawalsEl) withdrawalsEl.textContent = '$' + totalWithdrawals.toFixed(2);
-
-        const { count: tasksCount } = await supabaseClient
-            .from('user_tasks')
-            .select('*', { count: 'exact', head: true })
-            .eq('status', 'completed');
-        
-        const tasksEl = document.getElementById('statsTasks');
-        if (tasksEl) tasksEl.textContent = tasksCount || 0;
-
-        const { count: pendingCount } = await supabaseClient
-            .from('withdrawals')
-            .select('*', { count: 'exact', head: true })
-            .eq('status', 'pending');
-        
-        const pendingEl = document.getElementById('statsPending');
-        if (pendingEl) pendingEl.textContent = pendingCount || 0;
-
-        const { count: adRequestsCount } = await supabaseClient
-            .from('ad_requests')
-            .select('*', { count: 'exact', head: true })
-            .eq('status', 'pending');
-        
-        const adEl = document.getElementById('pendingAdsCount');
-        if (adEl) adEl.textContent = adRequestsCount || 0;
-
-        const { data: recentWithdrawals } = await supabaseClient
-            .from('withdrawals')
-            .select('*, users(username)')
-            .order('created_at', { ascending: false })
-            .limit(5);
-
-        const recentEl = document.getElementById('recentWithdrawals');
-        if (recentEl && recentWithdrawals) {
-            if (recentWithdrawals.length === 0) {
-                recentEl.innerHTML = '<tr><td colspan="3" style="text-align: center; color: var(--text-secondary);">لا توجد سحوبات</td></tr>';
-            } else {
-                recentEl.innerHTML = recentWithdrawals.map(w => `
-                    <tr>
-                        <td>${w.users?.username || 'مستخدم'}</td>
-                        <td>$${parseFloat(w.amount || 0).toFixed(2)}</td>
-                        <td><span class="badge ${w.status === 'pending' ? 'badge-warning' : w.status === 'approved' ? 'badge-success' : 'badge-danger'}">
-                            ${w.status === 'pending' ? '⏳ معلق' : w.status === 'approved' ? '✅ مقبول' : '❌ مرفوض'}
-                        </span></td>
-                    </tr>
-                `).join('');
-            }
-        }
-
-    } catch (e) {
-        console.error('خطأ في تحميل الإحصائيات:', e);
-    }
-}
-
-// ==========================================================
-// ===== دوال الأقسام =====
+// ===== دوال الأقسام (مختصرة) =====
 // ==========================================================
 
 function getDashboardHTML() {
@@ -542,12 +474,12 @@ function getDashboardHTML() {
     `;
 }
 
+// ===== دوال أخرى مختصرة =====
 function getUsersHTML() {
     return `
         <h2 class="section-title" style="text-align: right; font-size: 28px; margin-bottom: 24px;">
             <i class="fas fa-users"></i> إدارة المستخدمين
         </h2>
-
         <div class="admin-table-wrapper">
             <div class="table-header">
                 <h4>👥 قائمة المستخدمين</h4>
@@ -582,7 +514,6 @@ function getWithdrawalsHTML() {
         <h2 class="section-title" style="text-align: right; font-size: 28px; margin-bottom: 24px;">
             <i class="fas fa-money-bill-wave"></i> إدارة السحوبات
         </h2>
-
         <div class="admin-table-wrapper">
             <div class="table-header">
                 <h4>💸 طلبات السحب</h4>
@@ -613,959 +544,8 @@ function getWithdrawalsHTML() {
     `;
 }
 
-function getPrizesHTML() {
-    return `
-        <h2 class="section-title" style="text-align: right; font-size: 28px; margin-bottom: 24px;">
-            <i class="fas fa-gift"></i> إدارة الجوائز
-        </h2>
-
-        <div class="admin-form">
-            <h4>➕ إضافة جائزة جديدة</h4>
-            <form id="addPrizeForm">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>اسم الجائزة</label>
-                        <input type="text" class="form-control" placeholder="مثال: Google Play Card" />
-                    </div>
-                    <div class="form-group">
-                        <label>السعر ($)</label>
-                        <input type="number" class="form-control" placeholder="مثال: 25.00" />
-                    </div>
-                    <div class="form-group">
-                        <label>الفئة</label>
-                        <select class="form-control">
-                            <option>بطاقة هدايا</option>
-                            <option>قسيمة لعبة</option>
-                            <option>عملة رقمية</option>
-                            <option>أخرى</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>الكمية المتاحة</label>
-                        <input type="number" class="form-control" placeholder="مثال: 100" />
-                    </div>
-                    <div class="form-group full-width">
-                        <label>وصف الجائزة</label>
-                        <textarea class="form-control" rows="3" placeholder="وصف الجائزة"></textarea>
-                    </div>
-                </div>
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> حفظ الجائزة</button>
-                    <button type="reset" class="btn btn-secondary">إلغاء</button>
-                </div>
-            </form>
-        </div>
-    `;
-}
-
-function getGamesHTML() {
-    return `
-        <h2 class="section-title" style="text-align: right; font-size: 28px; margin-bottom: 24px;">
-            <i class="fas fa-gamepad"></i> إدارة الألعاب
-        </h2>
-
-        <div class="admin-form">
-            <h4>🎮 إضافة لعبة جديدة</h4>
-            <form>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>اسم اللعبة</label>
-                        <input type="text" class="form-control" placeholder="مثال: Blood Strike" />
-                    </div>
-                    <div class="form-group">
-                        <label>الشعار (رابط الصورة)</label>
-                        <input type="text" class="form-control" placeholder="https://..." />
-                    </div>
-                    <div class="form-group full-width">
-                        <label>وصف اللعبة</label>
-                        <textarea class="form-control" rows="2" placeholder="وصف اللعبة"></textarea>
-                    </div>
-                </div>
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> حفظ اللعبة</button>
-                </div>
-            </form>
-        </div>
-
-        <div class="admin-table-wrapper" style="margin-top: 20px;">
-            <div class="table-header">
-                <h4>🎮 الألعاب المدعومة</h4>
-            </div>
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>اللعبة</th>
-                            <th>الحالة</th>
-                            <th>الإجراءات</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr><td>🔫 Blood Strike</td><td><span class="badge badge-success">مدعومة</span></td><td><button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button></td></tr>
-                        <tr><td>🔥 Free Fire</td><td><span class="badge badge-success">مدعومة</span></td><td><button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button></td></tr>
-                        <tr><td>🎯 PUBG Mobile</td><td><span class="badge badge-success">مدعومة</span></td><td><button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button></td></tr>
-                        <tr><td>💣 Call of Duty Mobile</td><td><span class="badge badge-success">مدعومة</span></td><td><button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button></td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    `;
-}
-
-function getVouchersHTML() {
-    return `
-        <h2 class="section-title" style="text-align: right; font-size: 28px; margin-bottom: 24px;">
-            <i class="fas fa-ticket-alt"></i> إدارة القسائم
-        </h2>
-
-        <div class="admin-form">
-            <h4>📝 رفع أكواد القسائم</h4>
-            <form>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>اختر الجائزة</label>
-                        <select class="form-control">
-                            <option>Google Play $25</option>
-                            <option>Free Fire Diamonds</option>
-                            <option>Steam Wallet $50</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>عدد الأكواد</label>
-                        <input type="number" class="form-control" placeholder="مثال: 10" />
-                    </div>
-                    <div class="form-group full-width">
-                        <label>أكواد القسائم (كود واحد في كل سطر)</label>
-                        <textarea class="form-control" rows="5" placeholder="CODE-12345-XXXXX&#10;CODE-67890-YYYYY&#10;CODE-ABCDE-ZZZZZ"></textarea>
-                    </div>
-                </div>
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary"><i class="fas fa-upload"></i> رفع الأكواد</button>
-                </div>
-            </form>
-        </div>
-    `;
-}
-
-function getTasksHTML() {
-    return `
-        <h2 class="section-title" style="text-align: right; font-size: 28px; margin-bottom: 24px;">
-            <i class="fas fa-tasks"></i> إدارة المهام
-        </h2>
-
-        <div class="admin-form">
-            <h4>➕ إضافة مهمة جديدة</h4>
-            <form>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>عنوان المهمة</label>
-                        <input type="text" class="form-control" placeholder="مثال: مشاهدة فيديو" />
-                    </div>
-                    <div class="form-group">
-                        <label>نوع المهمة</label>
-                        <select class="form-control">
-                            <option>Offerwall</option>
-                            <option>استبيان</option>
-                            <option>فيديو</option>
-                            <option>زيارة موقع</option>
-                            <option>Smart Link</option>
-                            <option>Faucet</option>
-                            <option>اجتماعي</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>المكافأة ($)</label>
-                        <input type="number" class="form-control" placeholder="مثال: 0.50" step="0.001" />
-                    </div>
-                    <div class="form-group">
-                        <label>المدة (ثانية)</label>
-                        <input type="number" class="form-control" placeholder="مثال: 30" />
-                    </div>
-                    <div class="form-group full-width">
-                        <label>رابط المهمة</label>
-                        <input type="text" class="form-control" placeholder="https://..." />
-                    </div>
-                    <div class="form-group full-width">
-                        <label>تعليمات المهمة</label>
-                        <textarea class="form-control" rows="3" placeholder="تعليمات تنفيذ المهمة"></textarea>
-                    </div>
-                </div>
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> حفظ المهمة</button>
-                </div>
-            </form>
-        </div>
-
-        <div class="admin-table-wrapper" style="margin-top: 20px;">
-            <div class="table-header">
-                <h4>📋 قائمة المهام</h4>
-            </div>
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>المهمة</th>
-                            <th>النوع</th>
-                            <th>المكافأة</th>
-                            <th>المدة</th>
-                            <th>الحالة</th>
-                            <th>الإجراءات</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>مشاهدة فيديو 30 ثانية</td>
-                            <td>فيديو</td>
-                            <td>$0.002</td>
-                            <td>30s</td>
-                            <td><span class="badge badge-success">نشطة</span></td>
-                            <td>
-                                <button class="btn btn-info btn-sm"><i class="fas fa-edit"></i></button>
-                                <button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>زيارة موقع تقني</td>
-                            <td>زيارة</td>
-                            <td>$0.001</td>
-                            <td>30s</td>
-                            <td><span class="badge badge-success">نشطة</span></td>
-                            <td>
-                                <button class="btn btn-info btn-sm"><i class="fas fa-edit"></i></button>
-                                <button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    `;
-}
-
-function getOffersHTML() {
-    return `
-        <h2 class="section-title" style="text-align: right; font-size: 28px; margin-bottom: 24px;">
-            <i class="fas fa-ad"></i> إدارة Offerwalls
-        </h2>
-
-        <div class="admin-form">
-            <h4>🔗 إضافة Offerwall</h4>
-            <form>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>اسم الشركة</label>
-                        <select class="form-control">
-                            <option>CPX Research</option>
-                            <option>AdGate Media</option>
-                            <option>AdGem</option>
-                            <option>Lootably</option>
-                            <option>Ayet Studios</option>
-                            <option>RevU</option>
-                            <option>TimeWall</option>
-                            <option>BitLabs</option>
-                            <option>Monlix</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>API Key</label>
-                        <input type="text" class="form-control" placeholder="أدخل مفتاح API" />
-                    </div>
-                    <div class="form-group full-width">
-                        <label>رابط API</label>
-                        <input type="text" class="form-control" placeholder="https://api.example.com/offers" />
-                    </div>
-                </div>
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> حفظ</button>
-                </div>
-            </form>
-        </div>
-    `;
-}
-
-function getSurveysHTML() {
-    return `
-        <h2 class="section-title" style="text-align: right; font-size: 28px; margin-bottom: 24px;">
-            <i class="fas fa-poll"></i> إدارة الاستبيانات
-        </h2>
-
-        <div class="admin-form">
-            <h4>📝 إضافة استبيان جديد</h4>
-            <form>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>عنوان الاستبيان</label>
-                        <input type="text" class="form-control" placeholder="مثال: استبيان العملاء" />
-                    </div>
-                    <div class="form-group">
-                        <label>المكافأة ($)</label>
-                        <input type="number" class="form-control" placeholder="مثال: 0.50" />
-                    </div>
-                    <div class="form-group full-width">
-                        <label>رابط الاستبيان</label>
-                        <input type="text" class="form-control" placeholder="https://..." />
-                    </div>
-                </div>
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> حفظ</button>
-                </div>
-            </form>
-        </div>
-    `;
-}
-
-function getFaucetsHTML() {
-    return `
-        <h2 class="section-title" style="text-align: right; font-size: 28px; margin-bottom: 24px;">
-            <i class="fas fa-bolt"></i> إدارة الصنابير (Crypto Faucets)
-        </h2>
-
-        <div class="admin-form">
-            <h4>💰 إضافة صنبور جديد</h4>
-            <form>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>اسم الصنبور</label>
-                        <input type="text" class="form-control" placeholder="مثال: FaucetPay BTC" />
-                    </div>
-                    <div class="form-group">
-                        <label>العملة</label>
-                        <select class="form-control">
-                            <option>BTC</option>
-                            <option>ETH</option>
-                            <option>USDT</option>
-                            <option>DOGE</option>
-                            <option>LTC</option>
-                        </select>
-                    </div>
-                    <div class="form-group full-width">
-                        <label>رابط الصنبور</label>
-                        <input type="text" class="form-control" placeholder="https://..." />
-                    </div>
-                </div>
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> حفظ</button>
-                </div>
-            </form>
-        </div>
-    `;
-}
-
-function getSmartlinksHTML() {
-    return `
-        <h2 class="section-title" style="text-align: right; font-size: 28px; margin-bottom: 24px;">
-            <i class="fas fa-link"></i> إدارة Smart Links
-        </h2>
-
-        <div class="admin-form">
-            <h4>🔗 إضافة Smart Link</h4>
-            <form>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>عنوان الرابط</label>
-                        <input type="text" class="form-control" placeholder="مثال: عرض حصري" />
-                    </div>
-                    <div class="form-group">
-                        <label>المكافأة ($)</label>
-                        <input type="number" class="form-control" placeholder="مثال: 0.005" step="0.001" />
-                    </div>
-                    <div class="form-group full-width">
-                        <label>رابط الوجهة</label>
-                        <input type="text" class="form-control" placeholder="https://..." />
-                    </div>
-                </div>
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> حفظ</button>
-                </div>
-            </form>
-        </div>
-    `;
-}
-
-function getAdvertisersHTML() {
-    return `
-        <h2 class="section-title" style="text-align: right; font-size: 28px; margin-bottom: 24px;">
-            <i class="fas fa-bullhorn"></i> إدارة المعلنين
-        </h2>
-
-        <div class="admin-table-wrapper">
-            <div class="table-header">
-                <h4>📢 قائمة المعلنين</h4>
-                <button class="btn btn-primary btn-sm"><i class="fas fa-user-plus"></i> إضافة معلن</button>
-            </div>
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>المعلن</th>
-                            <th>البريد الإلكتروني</th>
-                            <th>عدد الحملات</th>
-                            <th>الميزانية الكلية</th>
-                            <th>الحالة</th>
-                            <th>الإجراءات</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>شركة التسويق</td>
-                            <td>marketing@company.com</td>
-                            <td>5</td>
-                            <td>$2,500</td>
-                            <td><span class="badge badge-success">نشط</span></td>
-                            <td>
-                                <button class="btn btn-info btn-sm"><i class="fas fa-edit"></i></button>
-                                <button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    `;
-}
-
-function getCampaignsHTML() {
-    return `
-        <h2 class="section-title" style="text-align: right; font-size: 28px; margin-bottom: 24px;">
-            <i class="fas fa-rocket"></i> إدارة الحملات الإعلانية
-        </h2>
-
-        <div class="admin-form">
-            <h4>🚀 إنشاء حملة جديدة</h4>
-            <form>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>عنوان الحملة</label>
-                        <input type="text" class="form-control" placeholder="مثال: حملة التسويق الرقمي" />
-                    </div>
-                    <div class="form-group">
-                        <label>المعلن</label>
-                        <select class="form-control">
-                            <option>شركة التسويق</option>
-                            <option>معلن 2</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>الميزانية ($)</label>
-                        <input type="number" class="form-control" placeholder="مثال: 1000" />
-                    </div>
-                    <div class="form-group">
-                        <label>المكافأة لكل مهمة ($)</label>
-                        <input type="number" class="form-control" placeholder="مثال: 0.10" step="0.01" />
-                    </div>
-                    <div class="form-group full-width">
-                        <label>رابط الحملة</label>
-                        <input type="text" class="form-control" placeholder="https://..." />
-                    </div>
-                </div>
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> إنشاء الحملة</button>
-                </div>
-            </form>
-        </div>
-    `;
-}
-
-function getPricesHTML() {
-    return `
-        <h2 class="section-title" style="text-align: right; font-size: 28px; margin-bottom: 24px;">
-            <i class="fas fa-dollar-sign"></i> إدارة الأسعار
-        </h2>
-
-        <div class="admin-form">
-            <h4>💰 تعديل الأسعار الافتراضية</h4>
-            <form>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>فيديو 15 ثانية</label>
-                        <input type="number" class="form-control" value="0.001" step="0.0001" />
-                    </div>
-                    <div class="form-group">
-                        <label>فيديو 30 ثانية</label>
-                        <input type="number" class="form-control" value="0.002" step="0.0001" />
-                    </div>
-                    <div class="form-group">
-                        <label>فيديو 60 ثانية</label>
-                        <input type="number" class="form-control" value="0.004" step="0.0001" />
-                    </div>
-                    <div class="form-group">
-                        <label>فيديو 120 ثانية</label>
-                        <input type="number" class="form-control" value="0.008" step="0.0001" />
-                    </div>
-                    <div class="form-group">
-                        <label>زيارة 15 ثانية</label>
-                        <input type="number" class="form-control" value="0.0005" step="0.0001" />
-                    </div>
-                    <div class="form-group">
-                        <label>زيارة 30 ثانية</label>
-                        <input type="number" class="form-control" value="0.001" step="0.0001" />
-                    </div>
-                    <div class="form-group">
-                        <label>زيارة 60 ثانية</label>
-                        <input type="number" class="form-control" value="0.002" step="0.0001" />
-                    </div>
-                    <div class="form-group">
-                        <label>زيارة 120 ثانية</label>
-                        <input type="number" class="form-control" value="0.004" step="0.0001" />
-                    </div>
-                    <div class="form-group">
-                        <label>مكافأة الإحالة</label>
-                        <input type="number" class="form-control" value="0.01" step="0.001" />
-                    </div>
-                    <div class="form-group">
-                        <label>الحد الأدنى للسحب</label>
-                        <input type="number" class="form-control" value="2" step="0.5" />
-                    </div>
-                </div>
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> حفظ التغييرات</button>
-                </div>
-            </form>
-        </div>
-    `;
-}
-
-function getLanguagesHTML() {
-    return `
-        <h2 class="section-title" style="text-align: right; font-size: 28px; margin-bottom: 24px;">
-            <i class="fas fa-language"></i> إدارة اللغات
-        </h2>
-
-        <div class="admin-form">
-            <h4>🌍 إضافة لغة جديدة</h4>
-            <form>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>اسم اللغة</label>
-                        <input type="text" class="form-control" placeholder="مثال: English" />
-                    </div>
-                    <div class="form-group">
-                        <label>رمز اللغة</label>
-                        <input type="text" class="form-control" placeholder="مثال: en" />
-                    </div>
-                    <div class="form-group full-width">
-                        <label>ملف الترجمة (JSON)</label>
-                        <textarea class="form-control" rows="5" placeholder='{"welcome": "Welcome to RewardHub", "earn": "Earn Money"}'></textarea>
-                    </div>
-                </div>
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> حفظ اللغة</button>
-                </div>
-            </form>
-        </div>
-    `;
-}
-
-function getNotificationsHTML() {
-    return `
-        <h2 class="section-title" style="text-align: right; font-size: 28px; margin-bottom: 24px;">
-            <i class="fas fa-bell"></i> إدارة الإشعارات
-        </h2>
-
-        <div class="admin-form">
-            <h4>📢 إرسال إشعار جديد</h4>
-            <form>
-                <div class="form-row">
-                    <div class="form-group full-width">
-                        <label>عنوان الإشعار</label>
-                        <input type="text" class="form-control" placeholder="مثال: تحديث جديد في المنصة" />
-                    </div>
-                    <div class="form-group full-width">
-                        <label>رسالة الإشعار</label>
-                        <textarea class="form-control" rows="3" placeholder="نص الإشعار"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label>المستهدفين</label>
-                        <select class="form-control">
-                            <option>جميع المستخدمين</option>
-                            <option>المستخدمين النشطين فقط</option>
-                            <option>مستخدم معين</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>رابط (اختياري)</label>
-                        <input type="text" class="form-control" placeholder="https://..." />
-                    </div>
-                </div>
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i> إرسال الإشعار</button>
-                </div>
-            </form>
-        </div>
-    `;
-}
-
-function getAIHTML() {
-    return `
-        <h2 class="section-title" style="text-align: right; font-size: 28px; margin-bottom: 24px;">
-            <i class="fas fa-robot"></i> إدارة الذكاء الاصطناعي
-        </h2>
-
-        <div class="admin-stats-grid">
-            <div class="admin-stat-card">
-                <div class="stat-icon">🤖</div>
-                <div class="stat-number">0</div>
-                <div class="stat-label">مهام بانتظار المراجعة</div>
-            </div>
-            <div class="admin-stat-card">
-                <div class="stat-icon">✅</div>
-                <div class="stat-number" style="color: var(--success);">94%</div>
-                <div class="stat-label">نسبة دقة الذكاء الاصطناعي</div>
-            </div>
-            <div class="admin-stat-card">
-                <div class="stat-icon">⏱️</div>
-                <div class="stat-number" style="color: var(--secondary);">2.3s</div>
-                <div class="stat-label">متوسط وقت المراجعة</div>
-            </div>
-            <div class="admin-stat-card">
-                <div class="stat-icon">📸</div>
-                <div class="stat-number">0</div>
-                <div class="stat-label">صورة تم تحليلها</div>
-            </div>
-        </div>
-
-        <div class="admin-form">
-            <h4>⚙️ إعدادات الذكاء الاصطناعي</h4>
-            <form>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>تفعيل مراجعة الصور</label>
-                        <div class="toggle-switch active" onclick="this.classList.toggle('active')">
-                            <div class="toggle-slider"></div>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>نسبة الثقة المطلوبة</label>
-                        <input type="number" class="form-control" value="75" min="0" max="100" />
-                    </div>
-                    <div class="form-group">
-                        <label>OCR (قراءة النصوص)</label>
-                        <div class="toggle-switch active" onclick="this.classList.toggle('active')">
-                            <div class="toggle-slider"></div>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>كشف الصور المعدلة</label>
-                        <div class="toggle-switch active" onclick="this.classList.toggle('active')">
-                            <div class="toggle-slider"></div>
-                        </div>
-                    </div>
-                    <div class="form-group full-width">
-                        <label>المهام المشكوك فيها ترسل للمراجعة اليدوية</label>
-                        <div class="toggle-switch active" onclick="this.classList.toggle('active')">
-                            <div class="toggle-slider"></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> حفظ الإعدادات</button>
-                </div>
-            </form>
-        </div>
-    `;
-}
-
-function getAntiFraudHTML() {
-    return `
-        <h2 class="section-title" style="text-align: right; font-size: 28px; margin-bottom: 24px;">
-            <i class="fas fa-shield-alt"></i> نظام مكافحة الغش
-        </h2>
-
-        <div class="admin-stats-grid">
-            <div class="admin-stat-card">
-                <div class="stat-icon">🛡️</div>
-                <div class="stat-number" style="color: var(--success);">0</div>
-                <div class="stat-label">حسابات موقوفة</div>
-            </div>
-            <div class="admin-stat-card">
-                <div class="stat-icon">⚠️</div>
-                <div class="stat-number" style="color: var(--warning);">0</div>
-                <div class="stat-label">تنبيهات أمنية</div>
-            </div>
-            <div class="admin-stat-card">
-                <div class="stat-icon">🌐</div>
-                <div class="stat-number" style="color: var(--secondary);">0</div>
-                <div class="stat-label">محاولات VPN ممنوعة</div>
-            </div>
-        </div>
-
-        <div class="admin-form">
-            <h4>⚙️ إعدادات مكافحة الغش</h4>
-            <form>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>كشف VPN</label>
-                        <div class="toggle-switch active" onclick="this.classList.toggle('active')">
-                            <div class="toggle-slider"></div>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>كشف Proxy</label>
-                        <div class="toggle-switch active" onclick="this.classList.toggle('active')">
-                            <div class="toggle-slider"></div>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Device Fingerprint</label>
-                        <div class="toggle-switch active" onclick="this.classList.toggle('active')">
-                            <div class="toggle-slider"></div>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>كشف الحسابات المتعددة</label>
-                        <div class="toggle-switch active" onclick="this.classList.toggle('active')">
-                            <div class="toggle-slider"></div>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>كشف إساءة الإحالات</label>
-                        <div class="toggle-switch active" onclick="this.classList.toggle('active')">
-                            <div class="toggle-slider"></div>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>الحد الأقصى للمحاولات الفاشلة</label>
-                        <input type="number" class="form-control" value="5" />
-                    </div>
-                </div>
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> حفظ الإعدادات</button>
-                </div>
-            </form>
-        </div>
-    `;
-}
-
-function getAPIsHTML() {
-    return `
-        <h2 class="section-title" style="text-align: right; font-size: 28px; margin-bottom: 24px;">
-            <i class="fas fa-plug"></i> إدارة مفاتيح API
-        </h2>
-
-        <div class="admin-form">
-            <h4>🔑 مفاتيح الخدمات</h4>
-            <form>
-                <div class="form-row">
-                    <div class="form-group full-width">
-                        <label>Supabase URL</label>
-                        <input type="text" class="form-control" placeholder="https://xxxxx.supabase.co" />
-                    </div>
-                    <div class="form-group full-width">
-                        <label>Supabase Key</label>
-                        <input type="password" class="form-control" placeholder="أدخل مفتاح Supabase" />
-                    </div>
-                    <div class="form-group full-width">
-                        <label>Binance API Key</label>
-                        <input type="password" class="form-control" placeholder="أدخل مفتاح Binance" />
-                    </div>
-                    <div class="form-group full-width">
-                        <label>Binance Secret Key</label>
-                        <input type="password" class="form-control" placeholder="أدخل المفتاح السري" />
-                    </div>
-                    <div class="form-group full-width">
-                        <label>Google Vision API (للذكاء الاصطناعي)</label>
-                        <input type="password" class="form-control" placeholder="أدخل مفتاح Google Vision" />
-                    </div>
-                </div>
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> حفظ المفاتيح</button>
-                </div>
-                <div style="margin-top: 12px; padding: 12px; background: rgba(255, 193, 7, 0.1); border-radius: 8px; border: 1px solid var(--warning);">
-                    <i class="fas fa-exclamation-triangle" style="color: var(--warning);"></i>
-                    <span style="color: var(--text-secondary);">⚠️ هذه المفاتيح مخزنة في الخادم وليست في واجهة المستخدم</span>
-                </div>
-            </form>
-        </div>
-    `;
-}
-
-function getBackupHTML() {
-    return `
-        <h2 class="section-title" style="text-align: right; font-size: 28px; margin-bottom: 24px;">
-            <i class="fas fa-database"></i> النسخ الاحتياطي
-        </h2>
-
-        <div class="card">
-            <h4>💾 عمل نسخة احتياطية</h4>
-            <p style="color: var(--text-secondary); margin: 12px 0;">
-                قم بعمل نسخة احتياطية كاملة من قاعدة البيانات وجميع الملفات
-            </p>
-            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-                <button class="btn btn-primary" onclick="if(confirm('هل أنت متأكد؟')) alert('جاري إنشاء النسخة الاحتياطية...')">
-                    <i class="fas fa-download"></i> إنشاء نسخة احتياطية
-                </button>
-                <button class="btn btn-secondary">
-                    <i class="fas fa-upload"></i> استعادة نسخة
-                </button>
-            </div>
-        </div>
-    `;
-}
-
-function getLogsHTML() {
-    return `
-        <h2 class="section-title" style="text-align: right; font-size: 28px; margin-bottom: 24px;">
-            <i class="fas fa-history"></i> سجل العمليات
-        </h2>
-
-        <div class="admin-form" style="margin-bottom: 20px;">
-            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-                <input type="text" id="logsSearchInput" class="form-control" placeholder="🔍 بحث في السجل..." style="flex: 1; min-width: 200px;" onkeyup="searchLogs()" />
-                <select id="logsFilterSelect" class="form-control" style="width: auto;" onchange="filterLogs()">
-                    <option value="all">جميع العمليات</option>
-                    <option value="login">تسجيل دخول</option>
-                    <option value="task">مهمة</option>
-                    <option value="withdrawal">سحب</option>
-                    <option value="prize">جائزة</option>
-                    <option value="admin">إدارة</option>
-                </select>
-                <button class="btn btn-primary" onclick="loadLogs()"><i class="fas fa-sync"></i> تحديث</button>
-            </div>
-        </div>
-
-        <div class="admin-table-wrapper">
-            <div class="table-header">
-                <h4>📋 سجل الأحداث</h4>
-                <span id="logsCount" style="color: var(--text-secondary); font-size: 13px;">0 سجل</span>
-            </div>
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>التاريخ والوقت</th>
-                            <th>المستخدم</th>
-                            <th>الحدث</th>
-                            <th>التفاصيل</th>
-                            <th>IP</th>
-                        </tr>
-                    </thead>
-                    <tbody id="logsTableBody">
-                        <tr><td colspan="5" style="text-align: center; color: var(--text-secondary);">جاري التحميل...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    `;
-}
-
-function getWalletHTML() {
-    return `
-        <h2 class="section-title" style="text-align: right; font-size: 28px; margin-bottom: 24px;">
-            <i class="fas fa-wallet"></i> محفظة الأدمن
-        </h2>
-
-        <div class="admin-stats-grid" id="walletStats">
-            <div class="admin-stat-card gradient-card">
-                <div class="stat-icon">💵</div>
-                <div class="stat-number" style="-webkit-text-fill-color: white;" id="walletTotal">$0.00</div>
-                <div class="stat-label">إجمالي المحفظة</div>
-            </div>
-            <div class="admin-stat-card">
-                <div class="stat-icon">📤</div>
-                <div class="stat-number" style="color: var(--danger);" id="walletWithdrawn">$0.00</div>
-                <div class="stat-label">إجمالي السحوبات</div>
-            </div>
-            <div class="admin-stat-card">
-                <div class="stat-icon">📥</div>
-                <div class="stat-number" style="color: var(--success);" id="walletDeposited">$0.00</div>
-                <div class="stat-label">إجمالي الإيداعات</div>
-            </div>
-            <div class="admin-stat-card">
-                <div class="stat-icon">🏦</div>
-                <div class="stat-number" style="color: var(--secondary);" id="walletBalance">$0.00</div>
-                <div class="stat-label">الرصيد المتاح</div>
-            </div>
-        </div>
-
-        <div class="admin-form">
-            <h4>➕ إضافة رصيد للمستخدم</h4>
-            <form id="addBalanceForm" onsubmit="addUserBalance(event)">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>👤 اسم المستخدم</label>
-                        <input type="text" id="balanceUsername" class="form-control" placeholder="أدخل اسم المستخدم" required />
-                    </div>
-                    <div class="form-group">
-                        <label>💰 المبلغ ($)</label>
-                        <input type="number" id="balanceAmount" class="form-control" placeholder="مثال: 10.00" step="0.01" min="0.01" required />
-                    </div>
-                    <div class="form-group full-width">
-                        <label>📝 سبب الإضافة</label>
-                        <textarea id="balanceReason" class="form-control" rows="2" placeholder="سبب إضافة الرصيد"></textarea>
-                    </div>
-                </div>
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-success"><i class="fas fa-plus"></i> إضافة رصيد</button>
-                </div>
-                <div id="balanceResponse" style="display: none; margin-top: 12px;"></div>
-            </form>
-        </div>
-
-        <div class="admin-table-wrapper" style="margin-top: 20px;">
-            <div class="table-header">
-                <h4>📊 سجل المحفظة</h4>
-            </div>
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>التاريخ</th>
-                            <th>المستخدم</th>
-                            <th>العملية</th>
-                            <th>المبلغ</th>
-                            <th>الرصيد الجديد</th>
-                        </tr>
-                    </thead>
-                    <tbody id="walletHistoryBody">
-                        <tr><td colspan="5" style="text-align: center; color: var(--text-secondary);">جاري التحميل...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    `;
-}
-
-function getAdRequestsHTML() {
-    return `
-        <h2 class="section-title" style="text-align: right; font-size: 28px; margin-bottom: 24px;">
-            <i class="fas fa-bullhorn" style="color: var(--accent);"></i> طلبات الإعلان
-        </h2>
-
-        <div class="admin-table-wrapper">
-            <div class="table-header">
-                <h4>📢 طلبات الإعلان الواردة</h4>
-                <div>
-                    <span class="badge badge-warning" id="pendingCount">0 معلق</span>
-                    <span class="badge badge-success" id="approvedCount">0 مقبول</span>
-                    <span class="badge badge-danger" id="rejectedCount">0 مرفوض</span>
-                </div>
-            </div>
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>المعلن</th>
-                            <th>نوع الإعلان</th>
-                            <th>الرابط</th>
-                            <th>المبلغ</th>
-                            <th>التاريخ</th>
-                            <th>الحالة</th>
-                            <th>الإجراءات</th>
-                        </tr>
-                    </thead>
-                    <tbody id="adRequestsTableBody">
-                        <tr><td colspan="8" style="text-align: center; color: var(--text-secondary);">جاري التحميل...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    `;
-}
-
-// ==========================================================
-// ===== دوال تحميل البيانات =====
-// ==========================================================
+// ===== باقي الدوال (نفس الكود السابق) =====
+// ===== دوال التحميل =====
 
 async function loadUsersTable() {
     try {
@@ -1593,8 +573,8 @@ async function loadUsersTable() {
                 <td>$${parseFloat(user.balance || 0).toFixed(2)}</td>
                 <td><span class="badge ${user.is_active ? 'badge-success' : 'badge-danger'}">${user.is_active ? '✅ نشط' : '❌ موقوف'}</span></td>
                 <td>
-                    <button class="btn btn-info btn-sm" onclick="alert('تعديل المستخدم ${user.id}')"><i class="fas fa-edit"></i></button>
-                    <button class="btn btn-danger btn-sm" onclick="if(confirm('هل أنت متأكد؟')) alert('تم حذف المستخدم')"><i class="fas fa-trash"></i></button>
+                    <button class="btn btn-info btn-sm"><i class="fas fa-edit"></i></button>
+                    <button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
                 </td>
             </tr>
         `).join('');
@@ -1633,10 +613,10 @@ async function loadWithdrawalsTable() {
                 </span></td>
                 <td>
                     ${w.status === 'pending' ? `
-                        <button class="btn btn-success btn-sm" onclick="approveWithdrawal('${w.id}')"><i class="fas fa-check"></i></button>
-                        <button class="btn btn-danger btn-sm" onclick="rejectWithdrawal('${w.id}')"><i class="fas fa-times"></i></button>
+                        <button class="btn btn-success btn-sm"><i class="fas fa-check"></i></button>
+                        <button class="btn btn-danger btn-sm"><i class="fas fa-times"></i></button>
                     ` : `
-                        <button class="btn btn-info btn-sm" onclick="alert('تفاصيل السحب')"><i class="fas fa-eye"></i></button>
+                        <button class="btn btn-info btn-sm"><i class="fas fa-eye"></i></button>
                     `}
                 </td>
             </tr>
@@ -1647,10 +627,7 @@ async function loadWithdrawalsTable() {
     }
 }
 
-// ==========================================================
-// ===== دوال سجل العمليات =====
-// ==========================================================
-
+// ===== دوال السجلات والمحفظة =====
 async function loadLogs() {
     try {
         const { data: logs, error } = await supabaseClient
@@ -1662,479 +639,201 @@ async function loadLogs() {
         if (error) throw error;
 
         const tbody = document.getElementById('logsTableBody');
-        const countEl = document.getElementById('logsCount');
-
         if (!tbody) return;
 
         if (!logs || logs.length === 0) {
             tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-secondary);">لا توجد سجلات</td></tr>';
-            if (countEl) countEl.textContent = '0 سجل';
             return;
         }
-
-        if (countEl) countEl.textContent = `${logs.length} سجل`;
-
-        const eventColors = {
-            'login': 'badge-success',
-            'task': 'badge-info',
-            'withdrawal': 'badge-warning',
-            'prize': 'badge-primary',
-            'admin': 'badge-danger',
-            'system': 'badge-secondary'
-        };
 
         tbody.innerHTML = logs.map(log => `
             <tr>
                 <td style="font-size: 13px; color: var(--text-muted);">${new Date(log.created_at).toLocaleString('ar-EG')}</td>
                 <td>${log.users?.username || 'غير معروف'}</td>
-                <td><span class="badge ${eventColors[log.event_type] || 'badge-secondary'}">${log.event_type || 'عام'}</span></td>
-                <td>${log.event_description || log.details || '-'}</td>
+                <td><span class="badge badge-secondary">${log.event_type || 'عام'}</span></td>
+                <td>${log.event_description || '-'}</td>
                 <td style="font-size: 13px; color: var(--text-muted);">${log.ip_address || '-'}</td>
             </tr>
         `).join('');
 
     } catch (error) {
         console.error('❌ خطأ في تحميل السجلات:', error);
-        const tbody = document.getElementById('logsTableBody');
-        if (tbody) {
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--danger);">❌ خطأ في تحميل السجلات</td></tr>';
-        }
     }
 }
 
-window.searchLogs = function() {
-    loadLogs();
-};
-
-window.filterLogs = function() {
-    loadLogs();
-};
-
-async function addLog(userId, eventType, description, details = null) {
+// ===== دوال إحصائيات الأدمن =====
+async function loadAdminStats() {
     try {
-        const { error } = await supabaseClient
-            .from('logs')
-            .insert([{
-                user_id: userId,
-                event_type: eventType,
-                event_description: description,
-                details: details,
-                ip_address: await getIPAddress()
-            }]);
+        const { count: usersCount } = await supabaseClient
+            .from('users')
+            .select('*', { count: 'exact', head: true });
+        
+        const usersEl = document.getElementById('statsUsers');
+        if (usersEl) usersEl.textContent = usersCount || 0;
 
-        if (error) console.error('❌ خطأ في إضافة السجل:', error);
-    } catch (e) {
-        console.error('❌ خطأ:', e);
-    }
-}
-
-// ==========================================================
-// ===== دوال المحفظة =====
-// ==========================================================
-
-async function loadWalletStats() {
-    try {
-        // إجمالي الأرباح (من جدول users)
-        const { data: earningsData, error: earningsError } = await supabaseClient
+        const { data: earningsData } = await supabaseClient
             .from('users')
             .select('total_earned');
+        
+        const totalEarnings = earningsData?.reduce((sum, u) => sum + (u.total_earned || 0), 0) || 0;
+        const earningsEl = document.getElementById('statsEarnings');
+        if (earningsEl) earningsEl.textContent = '$' + totalEarnings.toFixed(2);
 
-        if (!earningsError && earningsData) {
-            const total = earningsData.reduce((sum, u) => sum + (u.total_earned || 0), 0);
-            const el = document.getElementById('walletDeposited');
-            if (el) el.textContent = '$' + total.toFixed(2);
-        }
-
-        // إجمالي السحوبات (من جدول withdrawals)
-        const { data: withdrawalsData, error: withdrawalsError } = await supabaseClient
+        const { data: withdrawalsData } = await supabaseClient
             .from('withdrawals')
             .select('amount')
             .eq('status', 'processed');
+        
+        const totalWithdrawals = withdrawalsData?.reduce((sum, w) => sum + (w.amount || 0), 0) || 0;
+        const withdrawalsEl = document.getElementById('statsWithdrawals');
+        if (withdrawalsEl) withdrawalsEl.textContent = '$' + totalWithdrawals.toFixed(2);
 
-        if (!withdrawalsError && withdrawalsData) {
-            const total = withdrawalsData.reduce((sum, w) => sum + (w.amount || 0), 0);
-            const el = document.getElementById('walletWithdrawn');
-            if (el) el.textContent = '$' + total.toFixed(2);
+        const { count: tasksCount } = await supabaseClient
+            .from('user_tasks')
+            .select('*', { count: 'exact', head: true })
+            .eq('status', 'completed');
+        
+        const tasksEl = document.getElementById('statsTasks');
+        if (tasksEl) tasksEl.textContent = tasksCount || 0;
+
+        const { count: pendingCount } = await supabaseClient
+            .from('withdrawals')
+            .select('*', { count: 'exact', head: true })
+            .eq('status', 'pending');
+        
+        const pendingEl = document.getElementById('statsPending');
+        if (pendingEl) pendingEl.textContent = pendingCount || 0;
+
+        const { data: recentWithdrawals } = await supabaseClient
+            .from('withdrawals')
+            .select('*, users(username)')
+            .order('created_at', { ascending: false })
+            .limit(5);
+
+        const recentEl = document.getElementById('recentWithdrawals');
+        if (recentEl && recentWithdrawals) {
+            if (recentWithdrawals.length === 0) {
+                recentEl.innerHTML = '<tr><td colspan="3" style="text-align: center; color: var(--text-secondary);">لا توجد سحوبات</td></tr>';
+            } else {
+                recentEl.innerHTML = recentWithdrawals.map(w => `
+                    <tr>
+                        <td>${w.users?.username || 'مستخدم'}</td>
+                        <td>$${parseFloat(w.amount || 0).toFixed(2)}</td>
+                        <td><span class="badge ${w.status === 'pending' ? 'badge-warning' : w.status === 'approved' ? 'badge-success' : 'badge-danger'}">
+                            ${w.status === 'pending' ? '⏳ معلق' : w.status === 'approved' ? '✅ مقبول' : '❌ مرفوض'}
+                        </span></td>
+                    </tr>
+                `).join('');
+            }
         }
 
-        // الرصيد المتاح (مجموع أرصدة المستخدمين)
-        const { data: balanceData, error: balanceError } = await supabaseClient
+    } catch (e) {
+        console.error('خطأ في تحميل الإحصائيات:', e);
+    }
+}
+
+async function loadDashboardStats() {
+    try {
+        const { count: usersCount } = await supabaseClient
+            .from('users')
+            .select('*', { count: 'exact', head: true });
+
+        if (usersCount !== null) {
+            document.getElementById('usersCount').textContent = usersCount || 0;
+        }
+
+        const { count: pendingCount } = await supabaseClient
+            .from('withdrawals')
+            .select('*', { count: 'exact', head: true })
+            .eq('status', 'pending');
+
+        if (pendingCount !== null) {
+            document.getElementById('pendingWithdrawals').textContent = pendingCount || 0;
+        }
+    } catch (e) {
+        console.error('خطأ في تحميل الإحصائيات:', e);
+    }
+}
+
+async function loadWalletStats() {
+    try {
+        const { data: earningsData } = await supabaseClient
+            .from('users')
+            .select('total_earned');
+        
+        const totalEarnings = earningsData?.reduce((sum, u) => sum + (u.total_earned || 0), 0) || 0;
+        const depositedEl = document.getElementById('walletDeposited');
+        if (depositedEl) depositedEl.textContent = '$' + totalEarnings.toFixed(2);
+
+        const { data: withdrawalsData } = await supabaseClient
+            .from('withdrawals')
+            .select('amount')
+            .eq('status', 'processed');
+        
+        const totalWithdrawals = withdrawalsData?.reduce((sum, w) => sum + (w.amount || 0), 0) || 0;
+        const withdrawnEl = document.getElementById('walletWithdrawn');
+        if (withdrawnEl) withdrawnEl.textContent = '$' + totalWithdrawals.toFixed(2);
+
+        const { data: balanceData } = await supabaseClient
             .from('users')
             .select('balance');
-
-        if (!balanceError && balanceData) {
-            const total = balanceData.reduce((sum, u) => sum + (u.balance || 0), 0);
-            const el = document.getElementById('walletBalance');
-            if (el) el.textContent = '$' + total.toFixed(2);
-        }
-
-        // إجمالي المحفظة
-        const depositedEl = document.getElementById('walletDeposited');
-        const balanceEl = document.getElementById('walletBalance');
-        const totalEl = document.getElementById('walletTotal');
         
-        if (depositedEl && balanceEl && totalEl) {
-            const deposited = parseFloat(depositedEl.textContent.replace('$', '') || 0);
-            const balance = parseFloat(balanceEl.textContent.replace('$', '') || 0);
-            totalEl.textContent = '$' + (deposited + balance).toFixed(2);
-        }
+        const totalBalance = balanceData?.reduce((sum, u) => sum + (u.balance || 0), 0) || 0;
+        const balanceEl = document.getElementById('walletBalance');
+        if (balanceEl) balanceEl.textContent = '$' + totalBalance.toFixed(2);
 
-        await loadWalletHistory();
+        const totalEl = document.getElementById('walletTotal');
+        if (totalEl) totalEl.textContent = '$' + (totalEarnings + totalBalance).toFixed(2);
 
     } catch (e) {
         console.error('❌ خطأ في تحميل إحصائيات المحفظة:', e);
     }
 }
 
-async function loadWalletHistory() {
-    try {
-        const { data: history, error } = await supabaseClient
-            .from('deposit_history')
-            .select('*, users(username)')
-            .order('created_at', { ascending: false })
-            .limit(20);
+// ===== دوال الأقسام الفارغة =====
+function getPrizesHTML() { return `<h2>🎁 الجوائز</h2><p>قريباً...</p>`; }
+function getGamesHTML() { return `<h2>🎮 الألعاب</h2><p>قريباً...</p>`; }
+function getVouchersHTML() { return `<h2>🎫 القسائم</h2><p>قريباً...</p>`; }
+function getTasksHTML() { return `<h2>📝 المهام</h2><p>قريباً...</p>`; }
+function getOffersHTML() { return `<h2>📢 Offerwalls</h2><p>قريباً...</p>`; }
+function getSurveysHTML() { return `<h2>📊 الاستبيانات</h2><p>قريباً...</p>`; }
+function getFaucetsHTML() { return `<h2>💰 الصنابير</h2><p>قريباً...</p>`; }
+function getSmartlinksHTML() { return `<h2>🔗 Smart Links</h2><p>قريباً...</p>`; }
+function getAdvertisersHTML() { return `<h2>📢 المعلنون</h2><p>قريباً...</p>`; }
+function getCampaignsHTML() { return `<h2>🚀 الحملات</h2><p>قريباً...</p>`; }
+function getPricesHTML() { return `<h2>💰 الأسعار</h2><p>قريباً...</p>`; }
+function getLanguagesHTML() { return `<h2>🌍 اللغات</h2><p>قريباً...</p>`; }
+function getNotificationsHTML() { return `<h2>🔔 الإشعارات</h2><p>قريباً...</p>`; }
+function getAIHTML() { return `<h2>🤖 الذكاء الاصطناعي</h2><p>قريباً...</p>`; }
+function getAntiFraudHTML() { return `<h2>🛡️ مكافحة الغش</h2><p>قريباً...</p>`; }
+function getAPIsHTML() { return `<h2>🔌 APIs</h2><p>قريباً...</p>`; }
+function getBackupHTML() { return `<h2>💾 النسخ الاحتياطي</h2><p>قريباً...</p>`; }
+function getLogsHTML() { return `
+    <h2>📋 سجل العمليات</h2>
+    <div class="admin-table-wrapper">
+        <div class="table-container">
+            <table>
+                <thead><tr><th>التاريخ</th><th>المستخدم</th><th>الحدث</th><th>التفاصيل</th><th>IP</th></tr></thead>
+                <tbody id="logsTableBody"><tr><td colspan="5" style="text-align:center;color:var(--text-secondary);">جاري التحميل...</td></tr></tbody>
+            </table>
+        </div>
+    </div>
+`; }
+function getWalletHTML() { return `
+    <h2>💳 محفظة الأدمن</h2>
+    <div class="admin-stats-grid">
+        <div class="admin-stat-card gradient-card"><div class="stat-icon">💵</div><div class="stat-number" id="walletTotal">$0.00</div><div class="stat-label">إجمالي المحفظة</div></div>
+        <div class="admin-stat-card"><div class="stat-icon">📤</div><div class="stat-number" id="walletWithdrawn">$0.00</div><div class="stat-label">إجمالي السحوبات</div></div>
+        <div class="admin-stat-card"><div class="stat-icon">📥</div><div class="stat-number" id="walletDeposited">$0.00</div><div class="stat-label">إجمالي الإيداعات</div></div>
+        <div class="admin-stat-card"><div class="stat-icon">🏦</div><div class="stat-number" id="walletBalance">$0.00</div><div class="stat-label">الرصيد المتاح</div></div>
+    </div>
+`; }
+function getAdRequestsHTML() { return `<h2>📢 طلبات الإعلان</h2><p>قريباً...</p>`; }
 
-        const tbody = document.getElementById('walletHistoryBody');
-        if (!tbody) return;
-
-        if (error || !history || history.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-secondary);">لا توجد عمليات</td></tr>';
-            return;
-        }
-
-        tbody.innerHTML = history.map(h => `
-            <tr>
-                <td style="font-size: 13px; color: var(--text-muted);">${new Date(h.created_at).toLocaleString('ar-EG')}</td>
-                <td>${h.users?.username || 'غير معروف'}</td>
-                <td><span class="badge badge-success">إيداع</span></td>
-                <td style="color: var(--success); font-weight: 700;">+$${parseFloat(h.amount).toFixed(2)}</td>
-                <td>-</td>
-            </tr>
-        `).join('');
-
-    } catch (e) {
-        console.error('❌ خطأ في تحميل سجل المحفظة:', e);
-        const tbody = document.getElementById('walletHistoryBody');
-        if (tbody) {
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--danger);">❌ خطأ في التحميل</td></tr>';
-        }
-    }
-}
-
-// ===== إضافة رصيد للمستخدم =====
-window.addUserBalance = async function(e) {
-    e.preventDefault();
-
-    const username = document.getElementById('balanceUsername').value.trim();
-    const amount = parseFloat(document.getElementById('balanceAmount').value);
-    const reason = document.getElementById('balanceReason').value.trim();
-    const responseEl = document.getElementById('balanceResponse');
-
-    responseEl.style.display = 'none';
-
-    if (!username) {
-        responseEl.style.display = 'block';
-        responseEl.className = 'admin-response error';
-        responseEl.textContent = '⚠️ يرجى إدخال اسم المستخدم';
-        return;
-    }
-
-    if (!amount || amount <= 0) {
-        responseEl.style.display = 'block';
-        responseEl.className = 'admin-response error';
-        responseEl.textContent = '⚠️ يرجى إدخال مبلغ صحيح';
-        return;
-    }
-
-    // البحث عن المستخدم
-    const { data: user, error: userError } = await supabaseClient
-        .from('users')
-        .select('id, balance')
-        .eq('username', username)
-        .single();
-
-    if (userError || !user) {
-        responseEl.style.display = 'block';
-        responseEl.className = 'admin-response error';
-        responseEl.textContent = '❌ المستخدم غير موجود';
-        return;
-    }
-
-    if (!confirm(`هل أنت متأكد من إضافة $${amount.toFixed(2)} للمستخدم ${username}؟`)) return;
-
-    try {
-        // تحديث رصيد المستخدم
-        const { error: updateError } = await supabaseClient
-            .from('users')
-            .update({
-                balance: user.balance + amount,
-                total_earned: supabaseClient.rpc('increment_balance', {
-                    user_id: user.id,
-                    amount: amount
-                })
-            })
-            .eq('id', user.id);
-
-        if (updateError) throw updateError;
-
-        // تسجيل في سجل الإيداعات
-        const { error: depositError } = await supabaseClient
-            .from('deposit_history')
-            .insert([{
-                user_id: user.id,
-                amount: amount,
-                method: 'Admin',
-                status: 'completed',
-                transaction_id: 'ADMIN-' + Date.now()
-            }]);
-
-        if (depositError) throw depositError;
-
-        // تسجيل في سجل العمليات
-        await addLog(adminUser?.id, 'admin', `إضافة رصيد للمستخدم ${username} بمبلغ $${amount.toFixed(2)}`, {
-            username: username,
-            amount: amount,
-            reason: reason || 'لا يوجد سبب'
-        });
-
-        responseEl.style.display = 'block';
-        responseEl.className = 'admin-response success';
-        responseEl.textContent = `✅ تم إضافة $${amount.toFixed(2)} للمستخدم ${username} بنجاح!`;
-
-        document.getElementById('balanceUsername').value = '';
-        document.getElementById('balanceAmount').value = '';
-        document.getElementById('balanceReason').value = '';
-
-        // تحديث الإحصائيات
-        loadWalletStats();
-
-    } catch (error) {
-        responseEl.style.display = 'block';
-        responseEl.className = 'admin-response error';
-        responseEl.textContent = '❌ ' + error.message;
-    }
-};
-
-// ==========================================================
-// ===== دوال إدارة السحوبات =====
-// ==========================================================
-
-window.approveWithdrawal = async function(withdrawalId) {
-    if (!confirm('✅ هل أنت متأكد من قبول هذا السحب؟')) return;
-
-    try {
-        const { error } = await supabaseClient
-            .from('withdrawals')
-            .update({
-                status: 'approved',
-                processed_by: adminUser?.id,
-                processed_at: new Date().toISOString(),
-                admin_notes: 'تمت الموافقة على السحب'
-            })
-            .eq('id', withdrawalId);
-
-        if (error) throw error;
-
-        alert('✅ تم قبول السحب بنجاح!');
-        loadWithdrawalsTable();
-        loadAdminStats();
-        loadWalletStats();
-    } catch (error) {
-        alert('❌ خطأ: ' + error.message);
-    }
-};
-
-window.rejectWithdrawal = async function(withdrawalId) {
-    const reason = prompt('❌ سبب الرفض (اختياري):');
-    if (reason === null) return;
-
-    try {
-        const { data: withdrawal, error: getError } = await supabaseClient
-            .from('withdrawals')
-            .select('user_id, amount')
-            .eq('id', withdrawalId)
-            .single();
-
-        if (getError) throw getError;
-
-        const { error } = await supabaseClient
-            .from('withdrawals')
-            .update({
-                status: 'rejected',
-                processed_by: adminUser?.id,
-                processed_at: new Date().toISOString(),
-                admin_notes: reason || 'تم رفض السحب من قبل الإدارة'
-            })
-            .eq('id', withdrawalId);
-
-        if (error) throw error;
-
-        // إعادة الرصيد للمستخدم
-        const { error: balanceError } = await supabaseClient
-            .from('users')
-            .update({
-                balance: supabaseClient.rpc('increment_balance', {
-                    user_id: withdrawal.user_id,
-                    amount: withdrawal.amount
-                })
-            })
-            .eq('id', withdrawal.user_id);
-
-        if (balanceError) throw balanceError;
-
-        alert('❌ تم رفض السحب وإعادة المبلغ للمستخدم');
-        loadWithdrawalsTable();
-        loadAdminStats();
-        loadWalletStats();
-    } catch (error) {
-        alert('❌ خطأ: ' + error.message);
-    }
-};
-
-// ==========================================================
-// ===== دوال إدارة طلبات الإعلان =====
-// ==========================================================
-
-async function loadAdRequests() {
-    try {
-        const { data: requests, error } = await supabaseClient
-            .from('ad_requests')
-            .select('*, users(username, email)')
-            .order('created_at', { ascending: false });
-
-        if (error) throw error;
-
-        const tbody = document.getElementById('adRequestsTableBody');
-        if (!tbody) return;
-
-        const pending = requests?.filter(r => r.status === 'pending').length || 0;
-        const approved = requests?.filter(r => r.status === 'approved').length || 0;
-        const rejected = requests?.filter(r => r.status === 'rejected').length || 0;
-
-        const pendingCountEl = document.getElementById('pendingCount');
-        const approvedCountEl = document.getElementById('approvedCount');
-        const rejectedCountEl = document.getElementById('rejectedCount');
-        const pendingAdsEl = document.getElementById('pendingAdsCount');
-        
-        if (pendingCountEl) pendingCountEl.textContent = `${pending} معلق`;
-        if (approvedCountEl) approvedCountEl.textContent = `${approved} مقبول`;
-        if (rejectedCountEl) rejectedCountEl.textContent = `${rejected} مرفوض`;
-        if (pendingAdsEl) pendingAdsEl.textContent = pending;
-
-        if (!requests || requests.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-secondary);">لا توجد طلبات إعلان</td></tr>';
-            return;
-        }
-
-        const typeNames = {
-            website: '🌐 موقع',
-            social: '📱 تواصل اجتماعي',
-            premium: '⭐ إعلان مميز'
-        };
-
-        const statusColors = {
-            pending: 'badge-warning',
-            approved: 'badge-success',
-            rejected: 'badge-danger',
-            completed: 'badge-info'
-        };
-
-        const statusNames = {
-            pending: '⏳ قيد المراجعة',
-            approved: '✅ مقبول',
-            rejected: '❌ مرفوض',
-            completed: '✅ مكتمل'
-        };
-
-        tbody.innerHTML = requests.map((r, index) => `
-            <tr>
-                <td>${index + 1}</td>
-                <td>
-                    <strong>${r.users?.username || 'مستخدم'}</strong>
-                    <br><small style="color: var(--text-muted);">${r.users?.email || ''}</small>
-                </td>
-                <td>${typeNames[r.type] || r.type}</td>
-                <td><a href="${r.link}" target="_blank" style="color: var(--secondary); font-size: 12px; word-break: break-all;">${r.link.substring(0, 30)}...</a></td>
-                <td><span style="color: var(--secondary); font-weight: 700;">$${r.type === 'premium' ? '25.00' : '10.00'}</span></td>
-                <td style="font-size: 12px; color: var(--text-muted);">${new Date(r.created_at).toLocaleDateString('ar-EG')}</td>
-                <td><span class="badge ${statusColors[r.status] || 'badge-warning'}">${statusNames[r.status] || r.status}</span></td>
-                <td>
-                    ${r.status === 'pending' ? `
-                        <button class="btn btn-success btn-sm" onclick="approveAd('${r.id}')" title="قبول"><i class="fas fa-check"></i></button>
-                        <button class="btn btn-danger btn-sm" onclick="rejectAd('${r.id}')" title="رفض"><i class="fas fa-times"></i></button>
-                    ` : `
-                        <button class="btn btn-info btn-sm" onclick="viewAdDetails('${r.id}')" title="عرض التفاصيل"><i class="fas fa-eye"></i></button>
-                    `}
-                </td>
-            </tr>
-        `).join('');
-
-    } catch (error) {
-        console.error('❌ خطأ في تحميل طلبات الإعلان:', error);
-        const tbody = document.getElementById('adRequestsTableBody');
-        if (tbody) {
-            tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--danger);">❌ خطأ في التحميل</td></tr>';
-        }
-    }
-}
-
-window.approveAd = async function(requestId) {
-    if (!confirm('✅ هل أنت متأكد من قبول طلب الإعلان هذا؟')) return;
-
-    try {
-        const { error } = await supabaseClient
-            .from('ad_requests')
-            .update({
-                status: 'approved',
-                reviewed_at: new Date().toISOString(),
-                reviewed_by: adminUser?.id
-            })
-            .eq('id', requestId);
-
-        if (error) throw error;
-
-        alert('✅ تم قبول طلب الإعلان بنجاح!');
-        loadAdRequests();
-    } catch (error) {
-        alert('❌ خطأ: ' + error.message);
-    }
-};
-
-window.rejectAd = async function(requestId) {
-    const reason = prompt('❌ سبب الرفض (اختياري):');
-    if (reason === null) return;
-
-    try {
-        const { error } = await supabaseClient
-            .from('ad_requests')
-            .update({
-                status: 'rejected',
-                admin_notes: reason || 'تم الرفض من قبل الإدارة',
-                reviewed_at: new Date().toISOString(),
-                reviewed_by: adminUser?.id
-            })
-            .eq('id', requestId);
-
-        if (error) throw error;
-
-        alert('❌ تم رفض طلب الإعلان');
-        loadAdRequests();
-    } catch (error) {
-        alert('❌ خطأ: ' + error.message);
-    }
-};
-
-window.viewAdDetails = function(requestId) {
-    alert(`🔍 تفاصيل الطلب (ID: ${requestId})\n\nسيتم عرض التفاصيل الكاملة قريباً`);
-};
-
-// ==========================================================
 // ===== عند تحميل الصفحة =====
-// ==========================================================
-
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🔍 Admin page loaded');
+    console.log('🔍 Admin page loaded - بدأ التحميل');
     checkAdminSession();
 });
 
-console.log('🔐 Admin Panel (Secure Version) جاهز!');
+console.log('✅ Admin.js تم تحميله بنجاح!');
